@@ -1,0 +1,20 @@
+{
+    "stryker-config": {
+        "ignore-methods": [
+            "ConfigureAwait"
+        ],
+        "thresholds": {
+            "high": 95,
+            "low": 80,
+            "break": 20
+        },
+        "reporters": [
+            "Dots",
+            "ClearText",
+            "Html"
+        ],
+        "project-info": { 
+            "name": "github.com/tommysor/AspireTest1"
+        }
+    }
+}
