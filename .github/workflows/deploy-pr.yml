@@ -1,0 +1,26 @@
+name: deploy-pr
+
+on:
+  pull_request: 
+    branches: [ 'main' ]
+
+jobs:
+  deploy-environment:
+    runs-on: ubuntu-latest
+    env:
+      RG_NAME: "rg-pull-${{ github.event.pull_request.number }}"
+    steps:
+    - name: deploy
+      run: |
+        echo "Deploy pr $RG_NAME"
+        az group create --location norwayeast --name "$RG_NAME"
+        az deployment group create --mode Complete --resource-group "$RG_NAME" --template-file ./.platform/main.bicep
+    
+    - name: delay
+      run: |
+        sleep 5m
+    
+    - name: destroy
+      run: |
+        echo "Destroy"
+        az group delete --resource-group "$RG_NAME" --yes

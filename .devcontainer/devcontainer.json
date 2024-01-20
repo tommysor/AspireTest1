@@ -26,7 +26,8 @@
 		"vscode": {
 			"extensions": [
 				"ms-dotnettools.csdevkit",
-				"GitHub.vscode-github-actions"
+				"GitHub.vscode-github-actions",
+				"ms-azuretools.vscode-bicep"
 			]
 		}
 	}
