@@ -23,6 +23,13 @@ jobs:
     - name: deploy
       run: |
         echo "Deploy pr $RG_NAME"
+        echo "####"
+        echo "PWD"
+        pwd
+        echo "---"
+        echo "tree"
+        tree
+        echo "####"
         az group create --location norwayeast --name "$RG_NAME"
         az deployment group create --mode Complete --resource-group "$RG_NAME" --template-file ./.platform/main.bicep
 
