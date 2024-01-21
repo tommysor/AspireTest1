@@ -24,8 +24,10 @@ jobs:
     - name: create resource group
       run: az group create --location norwayeast --name "$RG_NAME"
     - name: deploy platform
-      run: az deployment group create --mode Complete --resource-group "$RG_NAME" --template-file ./.platform/main.bicep
-    
+      run: |
+        deploymentName="platform-${{ github.event.pull_request.number }}-$GITHUB_RUN_NUMBER"
+        az deployment group create --mode Complete --resource-group "$RG_NAME" --template-file ./.platform/main.bicep --name "$deploymentName"
+
     - name: destroy
       if: always()
       run: az group delete --resource-group "$RG_NAME" --yes
