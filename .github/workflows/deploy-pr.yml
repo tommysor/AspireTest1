@@ -27,6 +27,5 @@ jobs:
         az deployment group create --mode Complete --resource-group "$RG_NAME" --template-file ./.platform/main.bicep
     
     - name: destroy
-      run: |
-        echo "Destroy"
-        az group delete --resource-group "$RG_NAME" --yes
+      if: always()
+      run: az group delete --resource-group "$RG_NAME" --yes
