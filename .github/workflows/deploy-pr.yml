@@ -25,7 +25,7 @@ jobs:
       run: az group create --location norwayeast --name "$RG_NAME"
     - name: deploy platform
       run: |
-        datetime=$(date +'%Y-%m-%dT%H:%M:%S')
+        datetime=$(date +'%Y-%m-%dT%H%M%S')
         deploymentName="platform-${{ github.event.pull_request.number }}-$GITHUB_RUN_NUMBER-$datetime"
         az deployment group create --mode Complete --resource-group "$RG_NAME" --template-file ./.platform/main.bicep --name "$deploymentName"
 
