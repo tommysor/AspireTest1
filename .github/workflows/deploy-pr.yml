@@ -24,7 +24,7 @@ jobs:
     - name: deploy
       run: |
         az group create --location norwayeast --name "$RG_NAME"
-        az deployment group create --mode Complete --resource-group "$RG_NAME" --template-file ./.platform/main.bicep
+        #az deployment group create --mode Complete --resource-group "$RG_NAME" --template-file ./.platform/main.bicep
     
     - name: destroy
       run: |
