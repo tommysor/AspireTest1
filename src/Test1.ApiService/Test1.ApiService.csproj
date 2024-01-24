@@ -7,6 +7,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <ContainerRepository>apiservice</ContainerRepository>
+    <ContainerFamily>jammy-chiseled</ContainerFamily>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Test1.ServiceDefaults\Test1.ServiceDefaults.csproj" />
   </ItemGroup>
