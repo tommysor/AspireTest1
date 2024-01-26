@@ -31,8 +31,14 @@ jobs:
       id: deployPlatform
       run: |
         echo "RG_NAME: ${{ env.RG_NAME }}"
-        az deployment group create --mode Complete --resource-group "${{ env.RG_NAME }}" --name "${{ env.DEPLOYMENT_PLATFORM_NAME }}" --template-file ./.platform/main.bicep --parameters @./.platform/main.parameters.pr.json
-        echo "aaa=bbb" >> $GITHUB_OUTPUT
+        $output=$(az deployment group create --mode Complete --resource-group "${{ env.RG_NAME }}" --name "${{ env.DEPLOYMENT_PLATFORM_NAME }}" --template-file ./.platform/main.bicep --parameters @./.platform/main.parameters.pr.json)
+        echo "### OUTPUT ###"
+        echo $output
+        echo "### OUTPUTS ###"
+        $outputs=echo $output | jq '.properties.outputs'
+        echo "### containerAppsEnvironmentId ###"
+        $containerAppsEnvironmentId=echo $outputs | jq --raw-output '.containerAppsEnvironmentId.value'
+        echo "containerAppsEnvironmentId=$containerAppsEnvironmentId" >> $GITHUB_OUTPUT
 
     # - name: deploy platform
     #   uses: azure/arm-deploy@v1
@@ -47,7 +53,7 @@ jobs:
 
     - name: echo output
       run: |
-        echo "${{ steps.deployPlatform.outputs.aaa }}"
+        echo "${{ steps.deployPlatform.outputs.containerAppsEnvironmentId }}"
 
     - name: destroy
       if: always()
