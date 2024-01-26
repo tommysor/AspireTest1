@@ -24,10 +24,15 @@ jobs:
     - name: create resource group
       run: az group create --location norwayeast --name "$RG_NAME"
     - name: deploy platform
+      id: deployPlatform
       run: |
         datetime=$(date +'%Y-%m-%dT%H%M%S')
         deploymentName="platform-${{ github.event.pull_request.number }}-$GITHUB_RUN_NUMBER-$datetime"
         az deployment group create --mode Complete --resource-group "$RG_NAME" --template-file ./.platform/main.bicep --name "$deploymentName"
+
+    - name: echo output
+      run: |
+        echo "${{ steps.deployPlatform.outputs }}"
 
     - name: destroy
       if: always()
