@@ -32,6 +32,7 @@ jobs:
       run: |
         echo "RG_NAME: ${{ env.RG_NAME }}"
         az deployment group create --mode Complete --resource-group "${{ env.RG_NAME }}" --name "${{ env.DEPLOYMENT_PLATFORM_NAME }}" --template-file ./.platform/main.bicep --parameters @./.platform/main.parameters.pr.json
+        echo "aaa=bbb" >> $GITHUB_OUTPUT
 
     # - name: deploy platform
     #   uses: azure/arm-deploy@v1
