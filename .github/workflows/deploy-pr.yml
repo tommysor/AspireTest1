@@ -25,7 +25,7 @@ jobs:
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
     - name: create resource group
-      run: az group create --location norwayeast --name "${{ env.RG_NAME }}"
+      run: az group create --location norwayeast --name ${{ env.RG_NAME }}
 
     # - name: deploy platformxx
     #   id: deployPlatformxx
@@ -37,7 +37,7 @@ jobs:
       uses: azure/arm-deploy@v1
       id: deployPlatform
       with:
-        resourceGroupName: "${{ env.RG_NAME }}"
+        resourceGroupName: ${{ env.RG_NAME }}
         template: ./.platform/main.bicep
         parameters: ./.platform/main.parameters.pr.json
         deploymentMode: Complete
@@ -50,4 +50,4 @@ jobs:
 
     - name: destroy
       if: always()
-      run: az group delete --resource-group "${{ env.RG_NAME }}" --yes
+      run: az group delete --resource-group ${{ env.RG_NAME }} --yes
