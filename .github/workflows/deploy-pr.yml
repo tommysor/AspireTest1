@@ -36,10 +36,12 @@ jobs:
         cat az_create_output.txt
         echo "### OUTPUTS ###"
         cat az_create_output.txt | jq --raw-output '.properties.outputs.containerAppsEnvironmentId.value'
+        echo "### OUTPUTS SET ###"
+        containerAppsEnvironmentId=$(cat az_create_output.txt | jq --raw-output '.properties.outputs.containerAppsEnvironmentId.value')
         # $outputs=$(cat az_create_output.txt | jq '.properties.outputs')
         # echo "### containerAppsEnvironmentId ###"
         # $containerAppsEnvironmentId=echo $outputs | jq --raw-output '.containerAppsEnvironmentId.value'
-        # echo "containerAppsEnvironmentId=$containerAppsEnvironmentId" >> $GITHUB_OUTPUT
+        echo "containerAppsEnvironmentId=$containerAppsEnvironmentId" >> $GITHUB_OUTPUT
 
     - name: echo output
       run: |
