@@ -35,7 +35,7 @@ jobs:
         echo "### OUTPUT ###"
         cat az_create_output.txt
         echo "### OUTPUTS ###"
-        $outputs=cat az_create_output.txt | jq '.properties.outputs'
+        $outputs=$(cat az_create_output.txt | jq '.properties.outputs')
         echo "### containerAppsEnvironmentId ###"
         $containerAppsEnvironmentId=echo $outputs | jq --raw-output '.containerAppsEnvironmentId.value'
         echo "containerAppsEnvironmentId=$containerAppsEnvironmentId" >> $GITHUB_OUTPUT
