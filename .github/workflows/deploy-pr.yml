@@ -37,15 +37,21 @@ jobs:
         echo "### OUTPUTS ###"
         cat az_create_output.txt | jq --raw-output '.properties.outputs.containerAppsEnvironmentId.value'
         echo "### OUTPUTS SET ###"
+        # containerAppsEnvironmentId
         containerAppsEnvironmentId=$(cat az_create_output.txt | jq --raw-output '.properties.outputs.containerAppsEnvironmentId.value')
-        # $outputs=$(cat az_create_output.txt | jq '.properties.outputs')
-        # echo "### containerAppsEnvironmentId ###"
-        # $containerAppsEnvironmentId=echo $outputs | jq --raw-output '.containerAppsEnvironmentId.value'
         echo "containerAppsEnvironmentId=$containerAppsEnvironmentId" >> $GITHUB_OUTPUT
+        # containerRegistryId
+        containerRegistryId=$(cat az_create_output.txt | jq --raw-output '.properties.outputs.containerRegistryId.value')
+        echo "containerRegistryId=$containerRegistryId" >> $GITHUB_OUTPUT
+        # managedIdentityId
+        managedIdentityId=$(cat az_create_output.txt | jq --raw-output '.properties.outputs.managedIdentityId.value')
+        echo "managedIdentityId=$managedIdentityId" >> $GITHUB_OUTPUT
 
     - name: echo output
       run: |
-        echo "${{ steps.deployPlatform.outputs.containerAppsEnvironmentId }}"
+        echo "containerAppsEnvironmentId: ${{ steps.deployPlatform.outputs.containerAppsEnvironmentId }}"
+        echo "containerRegistryId: ${{ steps.deployPlatform.outputs.containerRegistryId }}"
+        echo "managedIdentityId: ${{ steps.deployPlatform.outputs.managedIdentityId }}"
 
     - name: destroy
       if: always()
