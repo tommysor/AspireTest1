@@ -5,7 +5,7 @@ param resourceGroupName string = resourceGroup().name
 
 @minLength(1)
 @description('Primary location for all resources')
-param location string = 'norwayeast'
+param location string
 
 // @minLength(3)
 // @description('Environment for ASP.NET Core. Like "Development", "Production", ..')
@@ -117,3 +117,7 @@ resource aksAcrPull 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
       principalId: principalId
   }
 }
+
+output containerAppsEnvironmentId string = containerAppsEnvironment.id
+output containerRegistryId string = containerRegistry.id
+output managedIdentityId string = identity.id
