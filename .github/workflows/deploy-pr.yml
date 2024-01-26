@@ -27,11 +27,22 @@ jobs:
     - name: create resource group
       run: az group create --location norwayeast --name "$RG_NAME"
 
+    # - name: deploy platformxx
+    #   id: deployPlatformxx
+    #   run: |
+    #     echo "RG_NAME: $RG_NAME"
+    #     az deployment group create --mode Complete --resource-group "$RG_NAME" --name "$DEPLOYMENT_PLATFORM_NAME" --template-file ./.platform/main.bicep --parameters @./.platform/main.parameters.pr.json
+
     - name: deploy platform
+      uses: azure/arm-deploy@v1
       id: deployPlatform
-      run: |
-        echo "RG_NAME: $RG_NAME"
-        az deployment group create --mode Complete --resource-group "$RG_NAME" --name "$DEPLOYMENT_PLATFORM_NAME" --template-file ./.platform/main.bicep --parameters @./.platform/main.parameters.pr.json
+      with:
+        resourceGroupName: ${{ env.RG_NAME }}
+        template: ./.platform/main.bicep
+        parameters: ./.platform/main.parameters.pr.json
+        deploymentMode: Complete
+        deploymentName: ${{ env.DEPLOYMENT_PLATFORM_NAME }}
+        # additionalArguments: "--what-if --rollback-on-error --what-if-exclude-change-types Create Ignore"
 
     - name: echo output
       run: |
