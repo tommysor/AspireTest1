@@ -26,7 +26,7 @@ jobs:
       run: |
         datetime=$(date +'%Y-%m-%dT%H%M%S')
         deploymentName="platform-${{ github.event.pull_request.number }}-$GITHUB_RUN_NUMBER-$datetime"
-        az deployment sub create --mode Complete --template-file ./.platform/main.bicep --name "$deploymentName" --location norwayeast --parameters resourceGroupName=$RG_NAME
+        az deployment sub create --template-file ./.platform/main.bicep --name "$deploymentName" --location norwayeast --parameters resourceGroupName=$RG_NAME
 
     - name: destroy
       if: always()
