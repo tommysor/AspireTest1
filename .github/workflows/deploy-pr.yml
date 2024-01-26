@@ -12,7 +12,8 @@ jobs:
   deploy-environment:
     runs-on: ubuntu-latest
     env:
-      RG_NAME: "rg-pull-${{ github.event.pull_request.number }}"
+      DATE_TIME: $(date +'%Y-%m-%dT%H%M%S')
+      RG_NAME: "rg-pull-${{ github.event.pull_request.number }}-$DATE_TIME"
     steps:
     - uses: actions/checkout@v3
     - name: 'Az CLI login'
@@ -26,8 +27,8 @@ jobs:
     - name: deploy platform
       id: deployPlatform
       run: |
-        datetime=$(date +'%Y-%m-%dT%H%M%S')
-        deploymentName="platform-${{ github.event.pull_request.number }}-$GITHUB_RUN_NUMBER-$datetime"
+        echo "RG_NAME: $RG_NAME"
+        deploymentName="platform-${{ github.event.pull_request.number }}-$GITHUB_RUN_NUMBER-$DATE_TIME"
         az deployment group create --mode Complete --resource-group "$RG_NAME" --name "$deploymentName" --template-file ./.platform/main.bicep --parameters main.parameters.pr.json
 
     - name: echo output
