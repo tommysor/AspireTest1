@@ -47,7 +47,7 @@ jobs:
 
     - name: echo output
       run: |
-        echo "${{ steps.deployPlatform.outputs }}"
+        echo "${{ steps.deployPlatform.outputs.aaa }}"
 
     - name: destroy
       if: always()
