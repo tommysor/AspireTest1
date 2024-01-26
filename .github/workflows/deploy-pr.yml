@@ -52,7 +52,6 @@ jobs:
         echo "containerAppsEnvironmentId: ${{ steps.deployPlatform.outputs.containerAppsEnvironmentId }}"
         echo "containerRegistryId: ${{ steps.deployPlatform.outputs.containerRegistryId }}"
         echo "managedIdentityId: ${{ steps.deployPlatform.outputs.managedIdentityId }}"
-        
 
     - name: destroy
       if: always()
