@@ -15,7 +15,7 @@ jobs:
     env:
       DEPLOYMENT_PLATFORM_NAME: "platform-${{ github.run_number }}-${{ github.run_attempt }}"
       RG_NAME: "rg-pull-${{ github.event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
-      CONTAINER_VERSION_TAG: "${{ github.event.pull_request.number }}_${{ github.run_number }}_${{ github.run_attempt }}"
+      CONTAINER_VERSION_TAG: "pull-${{ github.event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
     steps:
     - uses: actions/checkout@v3
 
@@ -62,7 +62,7 @@ jobs:
         echo "containerRegistryUrl: ${{ steps.deployPlatform.outputs.containerRegistryUrl }}"
         echo "managedIdentityId: ${{ steps.deployPlatform.outputs.managedIdentityId }}"
 
-    - name: login container containerRegistry
+    - name: login containerRegistry
       run: az acr login --name ${{ steps.deployPlatform.outputs.containerRegistryUrl }}
 
     - name: publish apiservice
@@ -73,7 +73,19 @@ jobs:
           --configuration Release \
           -p ContainerRegistry='${{ steps.deployPlatform.outputs.containerRegistryUrl }}' \
           -p:PublishProfile=DefaultContainer \
-          -p ContainerImageTag='"${{ env.CONTAINER_VERSION_TAG }}";latest'
+          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }};latest"'
+
+        popd
+
+    - name: publish webfrontend
+      run: |
+        pushd src/Test1.Web
+
+        dotnet publish \
+          --configuration Release
+          -p ContainerRegistry='${{ steps.deployPlatform.outputs.containerRegistryUrl }}' \
+          -p:PublishProfile=DefaultContainer \
+          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }};latest"'
 
         popd
 
