@@ -19,12 +19,6 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-07-01' =
   properties: {
       adminUserEnabled: true
       dataEndpointEnabled: false
-      policies: {
-        retentionPolicy: {
-          status: 'enabled'
-          days: 1
-        }
-      }
       encryption: {
         status: 'disabled'
       }
