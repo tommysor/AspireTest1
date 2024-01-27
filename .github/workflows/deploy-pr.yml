@@ -73,7 +73,7 @@ jobs:
           --configuration Release \
           -p ContainerRegistry='${{ steps.deployPlatform.outputs.containerRegistryUrl }}' \
           -p:PublishProfile=DefaultContainer \
-          -p ContainerImageTag='"${{ env.CONTAINER_VERSION_TAG }};latest"'
+          -p ContainerImageTag='"${{ env.CONTAINER_VERSION_TAG }}";latest'
 
         popd
 
