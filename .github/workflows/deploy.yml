@@ -15,6 +15,7 @@ jobs:
     env:
       RG_ACR: ${{ vars.RG_ACR }}
       RG_APP: ${{ vars.RG_APP }}
+      GITHUB_SHA_SHORT: $(git rev-parse --short ${{ github.sha }})
       #CONTAINER_VERSION_TAG: "${{ github. event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
       #APISERVICE_CONTAINERREPOSITORY: ${{ vars.APISERVICE_CONTAINERREPOSITORY }}
       #WEBFRONTEND_CONTAINERREPOSITORY: ${{ vars.WEBFRONTEND_CONTAINERREPOSITORY }}
@@ -26,6 +27,9 @@ jobs:
     - name: TEST TEST TEST
       run: |
         echo "Test git short hash"
+
+        echo "from env"
+        echo "${{ env.GITHUB_SHA_SHORT }}"
         
         echo "git rev-parse --short HEAD"
         git rev-parse --short HEAD
@@ -36,7 +40,7 @@ jobs:
         echo "git rev-parse --short ${{ github.sha }}"
         git rev-parse --short ${{ github.sha }}
 
-        echo "github_sha::7
+        echo "github_sha::7"
         echo "${GITHUB_SHA::7}"
 
     - name: 'Az login'
