@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  deploy-environment:
+  deploy:
     runs-on: ubuntu-latest
     env:
       DEPLOYMENT_PLATFORM_NAME: "platform-${{ github.run_number }}-${{ github.run_attempt }}"
@@ -32,7 +32,6 @@ jobs:
     - name: deploy platform
       id: deployPlatform
       run: |
-        echo "RG_NAME: ${{ env.RG_NAME }}"
         az deployment group create \
           --mode Complete \
           --resource-group "${{ env.RG_NAME }}" \
@@ -72,7 +71,7 @@ jobs:
         dotnet publish \
           -p ContainerRegistry='${{ steps.deployPlatform.outputs.containerRegistryUrl }}' \
           -p:PublishProfile=DefaultContainer \
-          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }};latest"'
+          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }}"'
 
         popd
 
@@ -83,7 +82,7 @@ jobs:
         dotnet publish \
           -p ContainerRegistry='${{ steps.deployPlatform.outputs.containerRegistryUrl }}' \
           -p:PublishProfile=DefaultContainer \
-          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }};latest"'
+          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }}"'
 
         popd
 
