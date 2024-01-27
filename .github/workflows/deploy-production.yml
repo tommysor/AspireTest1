@@ -1,0 +1,35 @@
+on:
+  # ON PULL REQUEST ONLY FOR TESTING
+  pull_request: 
+    branches: [ main ]
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '*.md'
+      - 'stryker-config.json'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.vscode/*'
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: false
+
+jobs:
+  deploydummy:
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+      - uses: actions/checkout@3
+
+      - name: DUMMY DEPLOY
+        run: |
+          echo "Dummy deploy. TODO: real deploy"
+
+  calldeploy:
+    uses: ./.github/workflows/deploy.yml

@@ -1,0 +1,11 @@
+on:
+  workflow_call:
+    
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: HELLO FROM CALLED
+      run: |
+        echo "Hello from called workflow"

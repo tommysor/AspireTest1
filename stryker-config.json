@@ -11,7 +11,8 @@
         "reporters": [
             "Dots",
             "ClearText",
-            "Html"
+            "Html",
+            "Markdown"
         ],
         "project-info": { 
             "name": "github.com/tommysor/AspireTest1"
