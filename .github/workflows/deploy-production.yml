@@ -1,0 +1,26 @@
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '*.md'
+      - 'stryker-config.json'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.vscode/*'
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: false
+
+jobs:
+  call:
+    uses: ./.github/workflows/deploy.yml
+    name: deploy
+    with:
+      environment: 'Production'
+    secrets: inherit
