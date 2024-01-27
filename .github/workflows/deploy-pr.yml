@@ -31,11 +31,14 @@ jobs:
       id: deployPlatform
       run: |
         echo "RG_NAME: ${{ env.RG_NAME }}"
-        az deployment group create --mode Complete --resource-group "${{ env.RG_NAME }}" --name "${{ env.DEPLOYMENT_PLATFORM_NAME }}" --template-file ./.platform/main.bicep --parameters @./.platform/main.parameters.pr.json > az_create_output.txt
-        echo "### OUTPUT ###"
-        cat az_create_output.txt
-        echo "### OUTPUTS ###"
-        cat az_create_output.txt | jq --raw-output '.properties.outputs.containerAppsEnvironmentId.value'
+        az deployment group create \
+          --mode Complete \
+          --resource-group "${{ env.RG_NAME }}" \
+          --name "${{ env.DEPLOYMENT_PLATFORM_NAME }}" \
+          --template-file ./.platform/main.bicep \
+          --parameters @./.platform/main.parameters.pr.json \
+          | tee az_create_output.txt
+
         echo "### OUTPUTS SET ###"
         # containerAppsEnvironmentId
         containerAppsEnvironmentId=$(cat az_create_output.txt | jq --raw-output '.properties.outputs.containerAppsEnvironmentId.value')
