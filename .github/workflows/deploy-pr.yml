@@ -90,12 +90,30 @@ jobs:
         popd
 
     - name: deploy app environment
+      env:
+        APISERVICE_CONTAINER_IMAGE: ${{ steps.deployAcr.outputs.containerRegistryUrl }}/${{ env.APISERVICE_CONTAINERREPOSITORY }}:${{ env.CONTAINER_VERSION_TAG }}
+        WEBFRONTEND_CONTAINER_IMAGE: ${{ steps.deployAcr.outputs.containerRegistryUrl }}/${{ env.WEBFRONTEND_CONTAINERREPOSITORY }}:${{ env.CONTAINER_VERSION_TAG }}
       run: |
         echo "Deploying applications"
 
         az group create --location norwayeast --name ${{ env.RG_APP }}
 
-        # TODO deploy bicep
+        az deployment group create \
+          --mode Complete \
+          --resource-group "${{ env.RG_APP }}" \
+          --name "${{ env.RG_APP }}" \
+          --template-file ./.platform/main.app.bicep \
+          --parameters aspnetcoreEnvironment=  \
+          --parameters containerRegistryUrl=${{ steps.deployAcr.outputs.containerRegistryUrl }} \
+          --parameters managedIdentityClientId=${{ steps.deployAcr.outputs.managedIdentityClientId }} \
+          --parameters managedIdentityId=${{ steps.deployAcr.outputs.managedIdentityId }} \
+          --parameters apiserviceContainerImage=${{ env.APISERVICE_CONTAINER_IMAGE }} \
+          --parameters webfrontendContainerImage=${{ env.WEBFRONTEND_CONTAINER_IMAGE }}
+
+    - name: DELAY FOR TESTING
+      run: |
+        echo "This 'sleep' is for testing. Delay to give a little time to look at the results"
+        sleep 120
 
     - name: destroy
       if: always()
