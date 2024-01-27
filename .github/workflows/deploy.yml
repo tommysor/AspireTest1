@@ -21,6 +21,8 @@ jobs:
       ASPNETCORE_ENVIRONMENT: ${{ inputs.environment }}
 
     steps:
+    - uses: actions/checkout@v3
+
     - name: TEST TEST TEST
       run: |
         echo "Test git short hash"
@@ -36,8 +38,6 @@ jobs:
 
         echo "github_sha::7
         echo "${GITHUB_SHA::7}"
-
-    - uses: actions/checkout@v3
 
     - name: 'Az login'
       uses: azure/login@v1
