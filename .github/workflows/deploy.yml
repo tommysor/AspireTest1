@@ -1,3 +1,5 @@
+name: deploy
+
 on:
   workflow_call:
     inputs:
@@ -10,7 +12,47 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
 
+    env:
+      RG_ACR: ${{ vars.RG_ACR }}
+      RG_APP: ${{ vars.RG_APP }}
+
     steps:
-    - name: HELLO FROM CALLED
+    - uses: actions/checkout@v3
+
+    - name: 'Az login'
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: deploy acr
+      id: deployAcr
+      env:
+        deploymentName: ${{ env.RG_ACR }}-$(date +%Y-%m-%dT%H.%M.%S)
       run: |
-        echo "Hello from called workflow"
+        echo "Deploying Container registry"
+
+        az group create --location norwayeast --name ${{ env.RG_ACR }}
+
+        az deployment group create \
+          --mode Complete \
+          --resource-group "${{ env.RG_ACR }}" \
+          --name "${{ env.deploymentName }}" \
+          --template-file ./.platform/main.acr.bicep \
+          --rollback-on-error \
+          | tee az_create_acr_output.txt
+        
+        echo "# setting outputs"
+        
+        # containerRegistryUrl
+        containerRegistryUrl=$(cat az_create_acr_output.txt | jq --raw-output '.properties.outputs.containerRegistryUrl.value')
+        echo "containerRegistryUrl=$containerRegistryUrl" >> $GITHUB_OUTPUT
+        # managedIdentityId
+        managedIdentityId=$(cat az_create_acr_output.txt | jq --raw-output '.properties.outputs.managedIdentityId.value')
+        echo "managedIdentityId=$managedIdentityId" >> $GITHUB_OUTPUT
+        # managedIdentityClientId
+        managedIdentityClientId=$(cat az_create_acr_output.txt | jq --raw-output '.properties.outputs.managedIdentityClientId.value')
+        echo "managedIdentityClientId=$managedIdentityClientId" >> $GITHUB_OUTPUT
+        
+        echo "# done"
