@@ -16,7 +16,7 @@ jobs:
       RG_APP: ${{ vars.RG_APP_PREFIX }}-${{ github.event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}
       CONTAINER_VERSION_TAG: "pull-${{ github.event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
     
-    # environment: ###TODO
+    environment: PullRequest
     
     steps:
     - uses: actions/checkout@v3
