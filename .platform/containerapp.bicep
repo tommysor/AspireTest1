@@ -12,7 +12,7 @@ param appScaleMaxReplicas int = 1
 
 param containerRegistryUrl string
 param containerImage string
-param containerCpu int = json('0.25')
+param containerCpu string = '0.25'
 param containerMemory string = '0.5Gi'
 
 param aspnetcoreEnvironment string
@@ -67,7 +67,7 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
             }
           ]
           resources: {
-            cpu: containerCpu
+            cpu: json(containerCpu)
             memory: containerMemory
           }
           probes: [
