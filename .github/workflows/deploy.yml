@@ -1,9 +1,14 @@
 on:
   workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
     
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
 
     steps:
     - name: HELLO FROM CALLED

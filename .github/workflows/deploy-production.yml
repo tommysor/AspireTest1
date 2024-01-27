@@ -21,16 +21,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploydummy:
-    runs-on: ubuntu-latest
-    #environment: Production
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: DUMMY DEPLOY
-      run: |
-        echo "Dummy deploy. TODO: real deploy"
-
-  calldeploy:
+  call:
     uses: ./.github/workflows/deploy.yml
-    name: deployname
+    name: deploy
+    with:
+      environment: 'Production'
