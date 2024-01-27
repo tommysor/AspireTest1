@@ -15,7 +15,7 @@ jobs:
     env:
       DEPLOYMENT_PLATFORM_NAME: "platform-${{ github.run_number }}-${{ github.run_attempt }}"
       RG_NAME: "rg-pull-${{ github.event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
-      CONTAINER_VERSION_TAG: "${{ github.event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
+      CONTAINER_VERSION_TAG: "${{ github.event.pull_request.number }}_${{ github.run_number }}_${{ github.run_attempt }}"
     steps:
     - uses: actions/checkout@v3
 
