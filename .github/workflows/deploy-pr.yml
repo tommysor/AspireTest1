@@ -75,6 +75,20 @@ jobs:
 
         popd
 
+    - name: publish webfrontend
+      run: |
+        echo "Publishing webfrontend"
+
+        pushd src/Test1.Web
+
+        dotnet publish \
+          -p ContainerRegistry='${{ steps.deployAcr.outputs.containerRegistryUrl }}' \
+          -p PublishProfile=DefaultContainer \
+          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }}"' \
+          -p ContainerRepository=${{ env.WEBFRONTEND_CONTAINERREPOSITORY }}
+
+        popd
+
     - name: deploy app environment
       run: |
         echo "Deploying applications"
