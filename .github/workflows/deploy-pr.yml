@@ -17,6 +17,7 @@ jobs:
       CONTAINER_VERSION_TAG: "pull-${{ github.event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
       APISERVICE_CONTAINERREPOSITORY: ${{ vars.APISERVICE_CONTAINERREPOSITORY }}
       WEBFRONTEND_CONTAINERREPOSITORY: ${{ vars.WEBFRONTEND_CONTAINERREPOSITORY }}
+      ASPNETCORE_ENVIRONMENT: PullRequest
     
     environment: PullRequest
     
@@ -103,7 +104,7 @@ jobs:
           --resource-group "${{ env.RG_APP }}" \
           --name "${{ env.RG_APP }}" \
           --template-file ./.platform/main.app.bicep \
-          --parameters aspnetcoreEnvironment=  \
+          --parameters aspnetcoreEnvironment=${{ env.ASPNETCORE_ENVIRONMENT }} \
           --parameters containerRegistryUrl=${{ steps.deployAcr.outputs.containerRegistryUrl }} \
           --parameters managedIdentityClientId=${{ steps.deployAcr.outputs.managedIdentityClientId }} \
           --parameters managedIdentityId=${{ steps.deployAcr.outputs.managedIdentityId }} \
