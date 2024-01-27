@@ -23,13 +23,14 @@ concurrency:
 jobs:
   deploydummy:
     runs-on: ubuntu-latest
-    environment: Production
+    #environment: Production
     steps:
-      - uses: actions/checkout@3
+    - uses: actions/checkout@v3
 
-      - name: DUMMY DEPLOY
-        run: |
-          echo "Dummy deploy. TODO: real deploy"
+    - name: DUMMY DEPLOY
+      run: |
+        echo "Dummy deploy. TODO: real deploy"
 
   calldeploy:
     uses: ./.github/workflows/deploy.yml
+    name: deployname
