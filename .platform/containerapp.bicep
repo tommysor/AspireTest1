@@ -4,13 +4,21 @@ param managedIdentityId string
 param managedIdentityClientId string
 
 param containerAppsEnvironmentId string
+param appName string
+param appIngressExternal bool = false
+param appIngressAllowInsecure bool = false
+param appScaleMinReplicas int = 0
+param appScaleMaxReplicas int = 1
 
 param containerRegistryUrl string
-
 param containerImage string
+param containerCpu string = '0.25'
+param containerMemory string = '0.5Gi'
+
+param aspnetcoreEnvironment string
 
 resource app 'Microsoft.App/containerApps@2023-05-01' = {
-  name: 'webfrontend'
+  name: appName
   location: location
   identity: {
     type: 'UserAssigned'
@@ -23,10 +31,10 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
     configuration: {
       activeRevisionsMode: 'Single'
       ingress: {
-        external: true
+        external: appIngressExternal
         targetPort: 8080
         transport: 'http'
-        allowInsecure: false
+        allowInsecure: appIngressAllowInsecure
       }
       registries: [
         {
@@ -39,8 +47,12 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
       containers: [
         {
           image: containerImage
-          name: 'webfrontend'
+          name: appName
           env: [
+            {
+              name: 'ASPNETCORE_ENVIRONMENT'
+              value: aspnetcoreEnvironment
+            }
             {
               name: 'AZURE_CLIENT_ID'
               value: managedIdentityClientId
@@ -55,8 +67,8 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
             }
           ]
           resources: {
-            cpu: json('0.25')
-            memory: '0.5Gi'
+            cpu: json(containerCpu)
+            memory: containerMemory
           }
           probes: [
             {
@@ -100,8 +112,8 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
         }
       ]
       scale: {
-        minReplicas: 0
-        maxReplicas: 1
+        minReplicas: appScaleMinReplicas
+        maxReplicas: appScaleMaxReplicas
       }
     }
   }

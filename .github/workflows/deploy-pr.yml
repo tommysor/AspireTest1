@@ -12,9 +12,15 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      DEPLOYMENT_PLATFORM_NAME: "platform-${{ github.run_number }}-${{ github.run_attempt }}"
-      RG_NAME: "rg-pull-${{ github.event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
+      RG_ACR: ${{ vars.RG_ACR_PREFIX }}-${{ github.event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}
+      RG_APP: ${{ vars.RG_APP_PREFIX }}-${{ github.event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}
       CONTAINER_VERSION_TAG: "pull-${{ github.event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
+      APISERVICE_CONTAINERREPOSITORY: ${{ vars.APISERVICE_CONTAINERREPOSITORY }}
+      WEBFRONTEND_CONTAINERREPOSITORY: ${{ vars.WEBFRONTEND_CONTAINERREPOSITORY }}
+      ASPNETCORE_ENVIRONMENT: PullRequest
+    
+    environment: PullRequest
+    
     steps:
     - uses: actions/checkout@v3
 
@@ -23,104 +29,96 @@ jobs:
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-    - name: create resource group
-      run: az group create --location norwayeast --name ${{ env.RG_NAME }}
-
-    - name: deploy platform
-      id: deployPlatform
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}    
+    
+    - name: deploy acr
+      id: deployAcr
       run: |
-        az deployment group create \
-          --mode Incremental \
-          --resource-group "${{ env.RG_NAME }}" \
-          --name "${{ env.DEPLOYMENT_PLATFORM_NAME }}" \
-          --template-file ./.platform/main.bicep \
-          --parameters @./.platform/main.parameters.pr.json \
-          | tee az_create_output.txt
+        echo "Deploying Container registry"
 
-        echo '# Set outputs'
-        # containerAppsEnvironmentId
-        containerAppsEnvironmentId=$(cat az_create_output.txt | jq --raw-output '.properties.outputs.containerAppsEnvironmentId.value')
-        echo "containerAppsEnvironmentId=$containerAppsEnvironmentId" >> $GITHUB_OUTPUT
-        # containerRegistryId
-        containerRegistryId=$(cat az_create_output.txt | jq --raw-output '.properties.outputs.containerRegistryId.value')
-        echo "containerRegistryId=$containerRegistryId" >> $GITHUB_OUTPUT
+        az group create --location norwayeast --name ${{ env.RG_ACR }}
+
+        az deployment group create \
+          --mode Complete \
+          --resource-group "${{ env.RG_ACR }}" \
+          --name "${{ env.RG_ACR }}" \
+          --template-file ./.platform/main.acr.bicep \
+          | tee az_create_acr_output.txt
+        
+        echo "# setting outputs"
+        
         # containerRegistryUrl
-        containerRegistryUrl=$(cat az_create_output.txt | jq --raw-output '.properties.outputs.containerRegistryUrl.value')
+        containerRegistryUrl=$(cat az_create_acr_output.txt | jq --raw-output '.properties.outputs.containerRegistryUrl.value')
         echo "containerRegistryUrl=$containerRegistryUrl" >> $GITHUB_OUTPUT
         # managedIdentityId
-        managedIdentityId=$(cat az_create_output.txt | jq --raw-output '.properties.outputs.managedIdentityId.value')
+        managedIdentityId=$(cat az_create_acr_output.txt | jq --raw-output '.properties.outputs.managedIdentityId.value')
         echo "managedIdentityId=$managedIdentityId" >> $GITHUB_OUTPUT
         # managedIdentityClientId
-        managedIdentityClientId=$(cat az_create_output.txt | jq --raw-output '.properties.outputs.managedIdentityClientId.value')
+        managedIdentityClientId=$(cat az_create_acr_output.txt | jq --raw-output '.properties.outputs.managedIdentityClientId.value')
         echo "managedIdentityClientId=$managedIdentityClientId" >> $GITHUB_OUTPUT
-
-    - name: echo output
-      run: |
-        echo "containerAppsEnvironmentId: ${{ steps.deployPlatform.outputs.containerAppsEnvironmentId }}"
-        echo "containerRegistryId: ${{ steps.deployPlatform.outputs.containerRegistryId }}"
-        echo "containerRegistryUrl: ${{ steps.deployPlatform.outputs.containerRegistryUrl }}"
-        echo "managedIdentityId: ${{ steps.deployPlatform.outputs.managedIdentityId }}"
-        echo "managedIdentityClientId: ${{ steps.deployPlatform.outputs.managedIdentityClientId }}"
+        
+        echo "# done"
 
     - name: login containerRegistry
-      run: az acr login --name ${{ steps.deployPlatform.outputs.containerRegistryUrl }}
+      run: az acr login --name ${{ steps.deployAcr.outputs.containerRegistryUrl }}
 
     - name: publish apiservice
       run: |
+        echo "Publishing apiservice"
+
         pushd src/Test1.ApiService
 
-        # TODO: ContainerRepository from env 4
         dotnet publish \
-          -p ContainerRegistry='${{ steps.deployPlatform.outputs.containerRegistryUrl }}' \
-          -p:PublishProfile=DefaultContainer \
-          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }}"'
+          -p ContainerRegistry='${{ steps.deployAcr.outputs.containerRegistryUrl }}' \
+          -p PublishProfile=DefaultContainer \
+          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }}"' \
+          -p ContainerRepository=${{ env.APISERVICE_CONTAINERREPOSITORY }}
 
         popd
-
-    - name: deploy apiservice
-      env:
-        CONTAINER_IMAGE: ${{ steps.deployPlatform.outputs.containerRegistryUrl }}/apiservice:${{ env.CONTAINER_VERSION_TAG }}
-      run: |
-        az deployment group create \
-          --mode Incremental \
-          --resource-group "${{ env.RG_NAME }}" \
-          --template-file ./src/Test1.ApiService/.platform/apiservice.bicep \
-          --parameters managedIdentityId=${{ steps.deployPlatform.outputs.managedIdentityId }} \
-          --parameters managedIdentityClientId=${{ steps.deployPlatform.outputs.managedIdentityClientId }} \
-          --parameters containerAppsEnvironmentId=${{ steps.deployPlatform.outputs.containerAppsEnvironmentId }} \
-          --parameters containerRegistryUrl=${{ steps.deployPlatform.outputs.containerRegistryUrl }} \
-          --parameters containerImage=${{ env.CONTAINER_IMAGE }} \
-          | tee az_create_apiservice_output.txt
 
     - name: publish webfrontend
       run: |
+        echo "Publishing webfrontend"
+
         pushd src/Test1.Web
 
         dotnet publish \
-          -p ContainerRegistry='${{ steps.deployPlatform.outputs.containerRegistryUrl }}' \
-          -p:PublishProfile=DefaultContainer \
-          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }}"'
+          -p ContainerRegistry='${{ steps.deployAcr.outputs.containerRegistryUrl }}' \
+          -p PublishProfile=DefaultContainer \
+          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }}"' \
+          -p ContainerRepository=${{ env.WEBFRONTEND_CONTAINERREPOSITORY }}
 
         popd
 
-    - name: deploy webfrontend
+    - name: deploy app environment
       env:
-        CONTAINER_IMAGE: ${{ steps.deployPlatform.outputs.containerRegistryUrl }}/webfrontend:${{ env.CONTAINER_VERSION_TAG }}
+        APISERVICE_CONTAINER_IMAGE: ${{ steps.deployAcr.outputs.containerRegistryUrl }}/${{ env.APISERVICE_CONTAINERREPOSITORY }}:${{ env.CONTAINER_VERSION_TAG }}
+        WEBFRONTEND_CONTAINER_IMAGE: ${{ steps.deployAcr.outputs.containerRegistryUrl }}/${{ env.WEBFRONTEND_CONTAINERREPOSITORY }}:${{ env.CONTAINER_VERSION_TAG }}
       run: |
-        set -e
+        echo "Deploying applications"
+
+        az group create --location norwayeast --name ${{ env.RG_APP }}
+
         az deployment group create \
-          --mode Incremental \
-          --resource-group "${{ env.RG_NAME }}" \
-          --template-file ./src/Test1.Web/.platform/webfrontend.bicep \
-          --parameters managedIdentityId=${{ steps.deployPlatform.outputs.managedIdentityId }} \
-          --parameters managedIdentityClientId=${{ steps.deployPlatform.outputs.managedIdentityClientId }} \
-          --parameters containerAppsEnvironmentId=${{ steps.deployPlatform.outputs.containerAppsEnvironmentId }} \
-          --parameters containerRegistryUrl=${{ steps.deployPlatform.outputs.containerRegistryUrl }} \
-          --parameters containerImage=${{ env.CONTAINER_IMAGE }} \
-          | tee az_create_webfrontend_output.txt
+          --mode Complete \
+          --resource-group "${{ env.RG_APP }}" \
+          --name "${{ env.RG_APP }}" \
+          --template-file ./.platform/main.app.bicep \
+          --parameters aspnetcoreEnvironment=${{ env.ASPNETCORE_ENVIRONMENT }} \
+          --parameters containerRegistryUrl=${{ steps.deployAcr.outputs.containerRegistryUrl }} \
+          --parameters managedIdentityClientId=${{ steps.deployAcr.outputs.managedIdentityClientId }} \
+          --parameters managedIdentityId=${{ steps.deployAcr.outputs.managedIdentityId }} \
+          --parameters apiserviceContainerImage=${{ env.APISERVICE_CONTAINER_IMAGE }} \
+          --parameters webfrontendContainerImage=${{ env.WEBFRONTEND_CONTAINER_IMAGE }}
 
     - name: destroy
       if: always()
-      run: az group delete --resource-group ${{ env.RG_NAME }} --yes
+      run: |
+        echo "Cleaning up"
+
+        echo "deleting ${{ env.RG_ACR }}"
+        az group delete --resource-group ${{ env.RG_ACR }} --yes
+        echo "deleting ${{ env.RG_APP }}"
+        az group delete --resource-group ${{ env.RG_APP }} --yes
+
+        echo "done"

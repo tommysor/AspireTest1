@@ -8,7 +8,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ContainerRepository>webfrontend</ContainerRepository>
     <ContainerFamily>jammy-chiseled</ContainerFamily>
   </PropertyGroup>
 
