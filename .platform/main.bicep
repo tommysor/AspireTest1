@@ -122,3 +122,4 @@ output containerAppsEnvironmentId string = containerAppsEnvironment.id
 output containerRegistryId string = containerRegistry.id
 output containerRegistryUrl string = containerRegistry.properties.loginServer
 output managedIdentityId string = identity.id
+output managedIdentityClientId string = identity.properties.clientId
