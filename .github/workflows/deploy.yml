@@ -15,8 +15,28 @@ jobs:
     env:
       RG_ACR: ${{ vars.RG_ACR }}
       RG_APP: ${{ vars.RG_APP }}
+      #CONTAINER_VERSION_TAG: "${{ github. event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
+      #APISERVICE_CONTAINERREPOSITORY: ${{ vars.APISERVICE_CONTAINERREPOSITORY }}
+      #WEBFRONTEND_CONTAINERREPOSITORY: ${{ vars.WEBFRONTEND_CONTAINERREPOSITORY }}
+      ASPNETCORE_ENVIRONMENT: ${{ inputs.environment }}
 
     steps:
+    - name: TEST TEST TEST
+      run: |
+        echo "Test git short hash"
+        
+        echo "git rev-parse --short HEAD"
+        git rev-parse --short HEAD
+        
+        echo "github.sha"
+        echo "${{ github.sha }}"
+        
+        echo "git rev-parse --short ${{ github.sha }}"
+        git rev-parse --short ${{ github.sha }}
+
+        echo "github_sha::7
+        echo "${GITHUB_SHA::7}"
+
     - uses: actions/checkout@v3
 
     - name: 'Az login'
