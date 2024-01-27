@@ -38,12 +38,13 @@ jobs:
 
         echo "deploymentName: ${{ env.deploymentName }}"
 
-        az deployment group create \
+        deployResult=$(az deployment group create \
           --mode Complete \
           --resource-group "${{ env.RG_ACR }}" \
           --name "${{ env.deploymentName }}" \
           --template-file ./.platform/main.acr.bicep \
-          --rollback-on-error
+          --rollback-on-error \
+          )
           
           #| tee az_create_acr_output.txt
         
