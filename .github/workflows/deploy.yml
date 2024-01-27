@@ -120,4 +120,5 @@ jobs:
           --parameters managedIdentityClientId=${{ steps.deployAcr.outputs.managedIdentityClientId }} \
           --parameters managedIdentityId=${{ steps.deployAcr.outputs.managedIdentityId }} \
           --parameters apiserviceContainerImage=${{ env.APISERVICE_CONTAINER_IMAGE }} \
-          --parameters webfrontendContainerImage=${{ env.WEBFRONTEND_CONTAINER_IMAGE }}
+          --parameters webfrontendContainerImage=${{ env.WEBFRONTEND_CONTAINER_IMAGE }} \
+          --parameters deployTimestamp=${{ env.DEPLOY_TIMESTAMP }}

@@ -18,6 +18,8 @@ param managedIdentityId string
 param apiserviceContainerImage string
 param webfrontendContainerImage string
 
+param deployTimestamp string = utcNow()
+
 var resourceToken = toLower(uniqueString(subscription().id, resourceGroupName, location))
 
 // log analytics
@@ -50,7 +52,7 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-05-01'
 }
 
 module apiservice 'containerapp.bicep' = {
-  name: 'apiservicemodule'
+  name: 'apiservice-${deployTimestamp}'
   params: {
     location: location
     appName: 'apiservice'
@@ -65,7 +67,7 @@ module apiservice 'containerapp.bicep' = {
 }
 
 module webfrontend 'containerapp.bicep' = {
-  name: 'webfrontendmodule'
+  name: 'webfrontend-${deployTimestamp}'
   params: {
     location: location
     appName: 'webfrontend'
