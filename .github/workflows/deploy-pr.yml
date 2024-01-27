@@ -70,7 +70,6 @@ jobs:
         pushd src/Test1.ApiService
 
         dotnet publish \
-          --configuration Release \
           -p ContainerRegistry='${{ steps.deployPlatform.outputs.containerRegistryUrl }}' \
           -p:PublishProfile=DefaultContainer \
           -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }};latest"'
@@ -82,7 +81,6 @@ jobs:
         pushd src/Test1.Web
 
         dotnet publish \
-          --configuration Release
           -p ContainerRegistry='${{ steps.deployPlatform.outputs.containerRegistryUrl }}' \
           -p:PublishProfile=DefaultContainer \
           -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }};latest"'
