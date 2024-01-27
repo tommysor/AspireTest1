@@ -120,4 +120,5 @@ resource aksAcrPull 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
 
 output containerAppsEnvironmentId string = containerAppsEnvironment.id
 output containerRegistryId string = containerRegistry.id
+output containerRegistryUrl string = containerRegistry.properties.loginServer
 output managedIdentityId string = identity.id
