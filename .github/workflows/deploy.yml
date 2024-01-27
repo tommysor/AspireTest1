@@ -43,10 +43,13 @@ jobs:
           --resource-group "${{ env.RG_ACR }}" \
           --name "${{ env.deploymentName }}" \
           --template-file ./.platform/main.acr.bicep \
-          --rollback-on-error \
           )
           
           #| tee az_create_acr_output.txt
+
+        echo "###"
+        echo $deployResult
+        echo "###"
         
         echo "# setting outputs"
         
