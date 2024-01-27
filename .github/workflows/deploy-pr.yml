@@ -105,6 +105,21 @@ jobs:
 
         popd
 
+    - name: deploy webfrontend
+      env:
+        CONTAINER_IMAGE: ${{ steps.deployPlatform.outputs.containerRegistryUrl }}/webfrontend:${{ env.CONTAINER_VERSION_TAG }}
+      run: |
+        az deployment group create \
+          --mode Incremental \
+          --resource-group "${{ env.RG_NAME }}" \
+          --template-file ./src/Test1.Web/.platform/webfrontend.bicep \
+          --parameters managedIdentityId=${{ steps.deployPlatform.outputs.managedIdentityId }} \
+          --parameters managedIdentityClientId=${{ steps.deployPlatform.outputs.managedIdentityClientId }} \
+          --parameters containerAppsEnvironmentId=${{ steps.deployPlatform.outputs.containerAppsEnvironmentId }} \
+          --parameters containerRegistryUrl=${{ steps.deployPlatform.outputs.containerRegistryUrl }} \
+          --parameters containerImage=${{ env.CONTAINER_IMAGE }} \
+          | tee az_create_webfrontend_output.txt
+
     - name: destroy
       if: always()
       run: az group delete --resource-group ${{ env.RG_NAME }} --yes

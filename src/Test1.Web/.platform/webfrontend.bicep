@@ -10,7 +10,7 @@ param containerRegistryUrl string
 param containerImage string
 
 resource app 'Microsoft.App/containerApps@2023-05-01' = {
-  name: 'apiservice'
+  name: 'webfrontend'
   location: location
   identity: {
     type: 'UserAssigned'
@@ -23,10 +23,10 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
     configuration: {
       activeRevisionsMode: 'Single'
       ingress: {
-        external: false
+        external: true
         targetPort: 8080
         transport: 'http'
-        allowInsecure: true
+        allowInsecure: false
       }
       registries: [
         {
@@ -39,7 +39,7 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
       containers: [
         {
           image: containerImage
-          name: 'apiservice'
+          name: 'webfrontend'
           env: [
             {
               name: 'AZURE_CLIENT_ID'
@@ -66,7 +66,7 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
               }
               timeoutSeconds: 3
               periodSeconds: 1
-              initialDelaySeconds: 1
+              initialDelaySeconds: 3
               successThreshold: 1
               failureThreshold: 30
             }
@@ -79,7 +79,7 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
               }
               timeoutSeconds: 5
               periodSeconds: 5
-              initialDelaySeconds: 3
+              initialDelaySeconds: 10
               successThreshold: 1
               failureThreshold: 10
             }
@@ -92,7 +92,7 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
               }
               timeoutSeconds: 2
               periodSeconds: 10
-              initialDelaySeconds: 3
+              initialDelaySeconds: 5
               successThreshold: 1
               failureThreshold: 3
             }
