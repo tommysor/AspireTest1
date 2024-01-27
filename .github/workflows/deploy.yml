@@ -25,7 +25,7 @@ jobs:
       ASPNETCORE_ENVIRONMENT: ${{ inputs.environment }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: 'Az login'
       uses: azure/login@v1
@@ -99,3 +99,25 @@ jobs:
           -p ContainerRepository=${{ env.WEBFRONTEND_CONTAINERREPOSITORY }}
 
         popd
+
+    - name: deploy app environment
+      env:
+        deploymentName: ${{ env.RG_APP }}-${{ env.DEPLOY_TIMESTAMP }}-${{ env.GITHUB_SHA_SHORT }}
+        APISERVICE_CONTAINER_IMAGE: ${{ steps.deployAcr.outputs.containerRegistryUrl }}/${{ env.APISERVICE_CONTAINERREPOSITORY }}:${{ env.CONTAINER_VERSION_TAG }}
+        WEBFRONTEND_CONTAINER_IMAGE: ${{ steps.deployAcr.outputs.containerRegistryUrl }}/${{ env.WEBFRONTEND_CONTAINERREPOSITORY }}:${{ env.CONTAINER_VERSION_TAG }}
+      run: |
+        echo "Deploying applications"
+
+        az group create --location norwayeast --name ${{ env.RG_APP }}
+
+        az deployment group create \
+          --mode Complete \
+          --resource-group "${{ env.RG_APP }}" \
+          --name "${{ env.deploymentName }}" \
+          --template-file ./.platform/main.app.bicep \
+          --parameters aspnetcoreEnvironment=${{ env.ASPNETCORE_ENVIRONMENT }} \
+          --parameters containerRegistryUrl=${{ steps.deployAcr.outputs.containerRegistryUrl }} \
+          --parameters managedIdentityClientId=${{ steps.deployAcr.outputs.managedIdentityClientId }} \
+          --parameters managedIdentityId=${{ steps.deployAcr.outputs.managedIdentityId }} \
+          --parameters apiserviceContainerImage=${{ env.APISERVICE_CONTAINER_IMAGE }} \
+          --parameters webfrontendContainerImage=${{ env.WEBFRONTEND_CONTAINER_IMAGE }}
