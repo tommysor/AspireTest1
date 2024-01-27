@@ -29,8 +29,7 @@ jobs:
     - name: deploy acr
       id: deployAcr
       env:
-        #deploymentName: ${{ env.RG_ACR }}-$(date +%Y-%m-%dT%H.%M.%S)
-        deploymentName: ${{ env.RG_ACR }}-1
+        deploymentName: ${{ env.RG_ACR }}-$(date +%Y-%m-%dT%H.%M.%S)
       run: |
         echo "Deploying Container registry"
 
@@ -44,23 +43,21 @@ jobs:
           --name "${{ env.deploymentName }}" \
           --template-file ./.platform/main.acr.bicep \
           )
-          
-          #| tee az_create_acr_output.txt
 
-        echo "###"
+        echo "# Deploy result"
         echo $deployResult
-        echo "###"
+        echo "# ---"
         
         echo "# setting outputs"
         
         # containerRegistryUrl
-        containerRegistryUrl=$(cat az_create_acr_output.txt | jq --raw-output '.properties.outputs.containerRegistryUrl.value')
+        containerRegistryUrl=$(echo $deployResult | jq --raw-output '.properties.outputs.containerRegistryUrl.value')
         echo "containerRegistryUrl=$containerRegistryUrl" >> $GITHUB_OUTPUT
         # managedIdentityId
-        managedIdentityId=$(cat az_create_acr_output.txt | jq --raw-output '.properties.outputs.managedIdentityId.value')
+        managedIdentityId=$(echo $deployResult | jq --raw-output '.properties.outputs.managedIdentityId.value')
         echo "managedIdentityId=$managedIdentityId" >> $GITHUB_OUTPUT
         # managedIdentityClientId
-        managedIdentityClientId=$(cat az_create_acr_output.txt | jq --raw-output '.properties.outputs.managedIdentityClientId.value')
+        managedIdentityClientId=$(echo $deployResult | jq --raw-output '.properties.outputs.managedIdentityClientId.value')
         echo "managedIdentityClientId=$managedIdentityClientId" >> $GITHUB_OUTPUT
         
         echo "# done"
