@@ -67,7 +67,7 @@ module webfrontend 'containerapp.bicep' = {
   name: 'webfrontendmodule'
   params: {
     location: location
-    appName: 'apiservice'
+    appName: 'webfrontend'
     aspnetcoreEnvironment: aspnetcoreEnvironment
     containerAppsEnvironmentId: containerAppsEnvironment.id
     containerImage: webfrontendContainerImage
