@@ -79,7 +79,7 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
               }
               timeoutSeconds: 5
               periodSeconds: 5
-              initialDelaySeconds: 10
+              initialDelaySeconds: 20
               successThreshold: 1
               failureThreshold: 10
             }
@@ -92,7 +92,7 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
               }
               timeoutSeconds: 2
               periodSeconds: 10
-              initialDelaySeconds: 5
+              initialDelaySeconds: 10
               successThreshold: 1
               failureThreshold: 3
             }
@@ -100,7 +100,7 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
         }
       ]
       scale: {
-        minReplicas: 1
+        minReplicas: 0
         maxReplicas: 1
       }
     }
