@@ -111,11 +111,6 @@ jobs:
           --parameters apiserviceContainerImage=${{ env.APISERVICE_CONTAINER_IMAGE }} \
           --parameters webfrontendContainerImage=${{ env.WEBFRONTEND_CONTAINER_IMAGE }}
 
-    - name: DELAY FOR TESTING
-      run: |
-        echo "This 'sleep' is for testing. Delay to give a little time to look at the results"
-        sleep 120
-
     - name: destroy
       if: always()
       run: |
