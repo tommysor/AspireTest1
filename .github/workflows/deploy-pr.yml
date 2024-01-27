@@ -70,7 +70,7 @@ jobs:
         dotnet publish \
           -p ContainerRegistry='${{ steps.deployAcr.outputs.containerRegistryUrl }}' \
           -p PublishProfile=DefaultContainer \
-          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }}"'
+          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }}"' \
           -p ContainerRepository=${{ env.APISERVICE_CONTAINERREPOSITORY }}
 
         popd
@@ -87,5 +87,10 @@ jobs:
       if: always()
       run: |
         echo "Cleaning up"
+
+        echo "deleting ${{ env.RG_ACR }}"
         az group delete --resource-group ${{ env.RG_ACR }} --yes
+        echo "deleting ${{ env.RG_APP }}"
         az group delete --resource-group ${{ env.RG_APP }} --yes
+
+        echo "done"
