@@ -33,7 +33,7 @@ jobs:
       id: deployPlatform
       run: |
         az deployment group create \
-          --mode Complete \
+          --mode Incremental \
           --resource-group "${{ env.RG_NAME }}" \
           --name "${{ env.DEPLOYMENT_PLATFORM_NAME }}" \
           --template-file ./.platform/main.bicep \
@@ -53,6 +53,9 @@ jobs:
         # managedIdentityId
         managedIdentityId=$(cat az_create_output.txt | jq --raw-output '.properties.outputs.managedIdentityId.value')
         echo "managedIdentityId=$managedIdentityId" >> $GITHUB_OUTPUT
+        # managedIdentityClientId
+        managedIdentityClientId=$(cat az_create_output.txt | jq --raw-output '.properties.outputs.managedIdentityClientId.value')
+        echo "managedIdentityClientId=$managedIdentityClientId" >> $GITHUB_OUTPUT
 
     - name: echo output
       run: |
@@ -60,6 +63,7 @@ jobs:
         echo "containerRegistryId: ${{ steps.deployPlatform.outputs.containerRegistryId }}"
         echo "containerRegistryUrl: ${{ steps.deployPlatform.outputs.containerRegistryUrl }}"
         echo "managedIdentityId: ${{ steps.deployPlatform.outputs.managedIdentityId }}"
+        echo "managedIdentityClientId: ${{ steps.deployPlatform.outputs.managedIdentityClientId }}"
 
     - name: login containerRegistry
       run: az acr login --name ${{ steps.deployPlatform.outputs.containerRegistryUrl }}
@@ -74,6 +78,21 @@ jobs:
           -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }}"'
 
         popd
+
+    - name: deploy apiservice
+      env:
+        CONTAINER_IMAGE: ${{ steps.deployPlatform.outputs.containerRegistryUrl }}/apiservice:${{ env.CONTAINER_VERSION_TAG }}
+      run: |
+        az deployment group create \
+          --mode Incremental \
+          --resource-group "${{ env.RG_NAME }}" \
+          --template-file ./src/Test1.ApiService/.platform/apiservice.bicep \
+          --parameters managedIdentityId=${{ steps.deployPlatform.outputs.managedIdentityId }} \
+          --parameters managedIdentityClientId=${{ steps.deployPlatform.outputs.managedIdentityClientId }} \
+          --parameters containerAppsEnvironmentId=${{ steps.deployPlatform.outputs.containerAppsEnvironmentId }} \
+          --parameters containerRegistryUrl=${{ steps.deployPlatform.outputs.containerRegistryUrl }} \
+          --parameters containerImage=${{ env.CONTAINER_IMAGE }} \
+          | tee az_create_apiservice_output.txt
 
     - name: publish webfrontend
       run: |
