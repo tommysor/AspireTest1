@@ -1,6 +1,7 @@
 name: deploy-pr
 
 on:
+  workflow_dispatch: 
   pull_request: 
     branches: [ 'main' ]
 
@@ -14,6 +15,7 @@ jobs:
     env:
       DEPLOYMENT_PLATFORM_NAME: "platform-${{ github.run_number }}-${{ github.run_attempt }}"
       RG_NAME: "rg-pull-${{ github.event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
+      CONTAINER_VERSION_TAG: "pull-${{ github.event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
     steps:
     - uses: actions/checkout@v3
 
@@ -31,18 +33,24 @@ jobs:
       id: deployPlatform
       run: |
         echo "RG_NAME: ${{ env.RG_NAME }}"
-        az deployment group create --mode Complete --resource-group "${{ env.RG_NAME }}" --name "${{ env.DEPLOYMENT_PLATFORM_NAME }}" --template-file ./.platform/main.bicep --parameters @./.platform/main.parameters.pr.json > az_create_output.txt
-        echo "### OUTPUT ###"
-        cat az_create_output.txt
-        echo "### OUTPUTS ###"
-        cat az_create_output.txt | jq --raw-output '.properties.outputs.containerAppsEnvironmentId.value'
-        echo "### OUTPUTS SET ###"
+        az deployment group create \
+          --mode Complete \
+          --resource-group "${{ env.RG_NAME }}" \
+          --name "${{ env.DEPLOYMENT_PLATFORM_NAME }}" \
+          --template-file ./.platform/main.bicep \
+          --parameters @./.platform/main.parameters.pr.json \
+          | tee az_create_output.txt
+
+        echo '# Set outputs'
         # containerAppsEnvironmentId
         containerAppsEnvironmentId=$(cat az_create_output.txt | jq --raw-output '.properties.outputs.containerAppsEnvironmentId.value')
         echo "containerAppsEnvironmentId=$containerAppsEnvironmentId" >> $GITHUB_OUTPUT
         # containerRegistryId
         containerRegistryId=$(cat az_create_output.txt | jq --raw-output '.properties.outputs.containerRegistryId.value')
         echo "containerRegistryId=$containerRegistryId" >> $GITHUB_OUTPUT
+        # containerRegistryUrl
+        containerRegistryUrl=$(cat az_create_output.txt | jq --raw-output '.properties.outputs.containerRegistryUrl.value')
+        echo "containerRegistryUrl=$containerRegistryUrl" >> $GITHUB_OUTPUT
         # managedIdentityId
         managedIdentityId=$(cat az_create_output.txt | jq --raw-output '.properties.outputs.managedIdentityId.value')
         echo "managedIdentityId=$managedIdentityId" >> $GITHUB_OUTPUT
@@ -51,7 +59,33 @@ jobs:
       run: |
         echo "containerAppsEnvironmentId: ${{ steps.deployPlatform.outputs.containerAppsEnvironmentId }}"
         echo "containerRegistryId: ${{ steps.deployPlatform.outputs.containerRegistryId }}"
+        echo "containerRegistryUrl: ${{ steps.deployPlatform.outputs.containerRegistryUrl }}"
         echo "managedIdentityId: ${{ steps.deployPlatform.outputs.managedIdentityId }}"
+
+    - name: login containerRegistry
+      run: az acr login --name ${{ steps.deployPlatform.outputs.containerRegistryUrl }}
+
+    - name: publish apiservice
+      run: |
+        pushd src/Test1.ApiService
+
+        dotnet publish \
+          -p ContainerRegistry='${{ steps.deployPlatform.outputs.containerRegistryUrl }}' \
+          -p:PublishProfile=DefaultContainer \
+          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }};latest"'
+
+        popd
+
+    - name: publish webfrontend
+      run: |
+        pushd src/Test1.Web
+
+        dotnet publish \
+          -p ContainerRegistry='${{ steps.deployPlatform.outputs.containerRegistryUrl }}' \
+          -p:PublishProfile=DefaultContainer \
+          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }};latest"'
+
+        popd
 
     - name: destroy
       if: always()
