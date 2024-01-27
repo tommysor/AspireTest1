@@ -60,6 +60,7 @@ module apiservice 'containerapp.bicep' = {
     containerRegistryUrl: containerRegistryUrl
     managedIdentityClientId: managedIdentityClientId
     managedIdentityId: managedIdentityId
+    appIngressAllowInsecure: true
   }
 }
 
@@ -74,5 +75,6 @@ module webfrontend 'containerapp.bicep' = {
     containerRegistryUrl: containerRegistryUrl
     managedIdentityClientId: managedIdentityClientId
     managedIdentityId: managedIdentityId
+    appIngressExternal: true
   }
 }
