@@ -15,6 +15,8 @@ jobs:
       RG_ACR: ${{ vars.RG_ACR_PREFIX }}-${{ github.event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}
       RG_APP: ${{ vars.RG_APP_PREFIX }}-${{ github.event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}
       CONTAINER_VERSION_TAG: "pull-${{ github.event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
+      APISERVICE_CONTAINERREPOSITORY: ${{ vars.APISERVICE_CONTAINERREPOSITORY }}
+      WEBFRONTEND_CONTAINERREPOSITORY: ${{ vars.WEBFRONTEND_CONTAINERREPOSITORY }}
     
     environment: PullRequest
     
@@ -35,15 +37,45 @@ jobs:
 
         az group create --location norwayeast --name ${{ env.RG_ACR }}
 
-        # TODO deploy bicep
+        az deployment group create \
+          --mode Complete \
+          --resource-group "${{ env.RG_ACR }}" \
+          --name "${{ env.RG_ACR }}" \
+          --template-file ./.platform/main.acr.bicep \
+          | tee az_create_acr_output.txt
+        
+        echo "# setting outputs"
+        
+        # containerRegistryUrl
+        containerRegistryUrl=$(cat az_create_acr_output.txt | jq --raw-output '.properties.outputs.containerRegistryUrl.value')
+        echo "containerRegistryUrl=$containerRegistryUrl" >> $GITHUB_OUTPUT
+        # managedIdentityId
+        managedIdentityId=$(cat az_create_acr_output.txt | jq --raw-output '.properties.outputs.managedIdentityId.value')
+        echo "managedIdentityId=$managedIdentityId" >> $GITHUB_OUTPUT
+        # managedIdentityClientId
+        managedIdentityClientId=$(cat az_create_acr_output.txt | jq --raw-output '.properties.outputs.managedIdentityClientId.value')
+        echo "managedIdentityClientId=$managedIdentityClientId" >> $GITHUB_OUTPUT
+        
+        echo "# done"
 
-    - name: publish apps
+    - name: login containerRegistry
+      run: az acr login --name ${{ steps.deployAcr.outputs.containerRegistryUrl }}
+
+    - name: publish apiservice
       run: |
-        echo "Publishing apps"
+        echo "Publishing apiservice"
 
-        # TODO publish apps and push to ACR
+        pushd src/Test1.ApiService
 
-    - name: deploy apps
+        dotnet publish \
+          -p ContainerRegistry='${{ steps.deployAcr.outputs.containerRegistryUrl }}' \
+          -p PublishProfile=DefaultContainer \
+          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }}"'
+          -p ContainerRepository=${{ env.APISERVICE_CONTAINERREPOSITORY }}
+
+        popd
+
+    - name: deploy app environment
       run: |
         echo "Deploying applications"
 

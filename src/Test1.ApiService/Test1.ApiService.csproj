@@ -8,7 +8,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ContainerRepository>apiservice</ContainerRepository>
     <ContainerFamily>jammy-chiseled</ContainerFamily>
   </PropertyGroup>
 
