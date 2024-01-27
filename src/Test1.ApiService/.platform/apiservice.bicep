@@ -58,6 +58,45 @@ resource apiservice 'Microsoft.App/containerApps@2023-05-01' = {
             cpu: json('0.25')
             memory: '0.5Gi'
           }
+          probes: [
+            {
+              type: 'Startup'
+              tcpSocket: {
+                port: 8080
+              }
+              timeoutSeconds: 3
+              periodSeconds: 1
+              initialDelaySeconds: 1
+              successThreshold: 1
+              failureThreshold: 30
+            }
+            {
+              type: 'Readiness'
+              httpGet: {
+                port: 8080
+                path: '/health'
+                scheme: 'HTTP'
+              }
+              timeoutSeconds: 5
+              periodSeconds: 5
+              initialDelaySeconds: 3
+              successThreshold: 1
+              failureThreshold: 10
+            }
+            {
+              type: 'Liveness'
+              httpGet: {
+                port: 8080
+                path: '/alive'
+                scheme: 'HTTP'
+              }
+              timeoutSeconds: 2
+              periodSeconds: 10
+              initialDelaySeconds: 3
+              successThreshold: 1
+              failureThreshold: 3
+            }
+          ]
         }
       ]
       scale: {
