@@ -118,3 +118,5 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
     }
   }
 }
+
+output latestRevisionFqdn string = app.properties.latestRevisionFqdn

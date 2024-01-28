@@ -6,6 +6,9 @@ on:
       environment:
         required: true
         type: string
+    outputs:
+      webfrontendUrl:
+        value: ${{ jobs.deploy.outputs.webfrontendUrl }}
 
 env:
   GITHUB_SHA_SHORT: $(git rev-parse --short ${{ github.sha }})
@@ -15,6 +18,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+
+    outputs:
+      webfrontendUrl: ${{ steps.deploy-app-environment.outputs.webfrontendLatestRevisionFqdn }}
 
     env:
       RG_ACR: ${{ vars.RG_ACR }}
@@ -101,6 +107,7 @@ jobs:
         popd
 
     - name: deploy app environment
+      id: deploy-app-environment
       env:
         deploymentName: ${{ env.RG_APP }}-${{ env.DEPLOY_TIMESTAMP }}-${{ env.GITHUB_SHA_SHORT }}
         APISERVICE_CONTAINER_IMAGE: ${{ steps.deployAcr.outputs.containerRegistryUrl }}/${{ env.APISERVICE_CONTAINERREPOSITORY }}:${{ env.CONTAINER_VERSION_TAG }}
@@ -110,7 +117,7 @@ jobs:
 
         az group create --location norwayeast --name ${{ env.RG_APP }}
 
-        az deployment group create \
+        deployResult=$(az deployment group create \
           --mode Complete \
           --resource-group "${{ env.RG_APP }}" \
           --name "${{ env.deploymentName }}" \
@@ -121,4 +128,16 @@ jobs:
           --parameters managedIdentityId=${{ steps.deployAcr.outputs.managedIdentityId }} \
           --parameters apiserviceContainerImage=${{ env.APISERVICE_CONTAINER_IMAGE }} \
           --parameters webfrontendContainerImage=${{ env.WEBFRONTEND_CONTAINER_IMAGE }} \
-          --parameters deployTimestamp=${{ env.DEPLOY_TIMESTAMP }}
+          --parameters deployTimestamp=${{ env.DEPLOY_TIMESTAMP }} \
+          )
+        
+        echo "# Deploy result"
+        echo $deployResult
+        echo "# ---"
+
+        echo "# setting outputs"
+        
+        # webfrontendLatestRevisionFqdn
+        webfrontendLatestRevisionFqdn=$(echo $deployResult | jq --raw-output '.properties.outputs.webfrontendLatestRevisionFqdn.value')
+        echo "webfrontendLatestRevisionFqdn=$webfrontendLatestRevisionFqdn" >> $GITHUB_OUTPUT
+        echo "webfrontendLatestRevisionFqdn: $webfrontendLatestRevisionFqdn"

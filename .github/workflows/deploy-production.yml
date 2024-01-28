@@ -28,14 +28,24 @@ jobs:
     with:
       environment: 'Test'
     secrets: inherit
+
   acceptance-test:
     runs-on: ubuntu-latest
     needs: deploy-test
+    env:
+      webfrontendUrl: ${{ needs.deploy-test.outputs.webfrontendUrl }}
     steps:
       - name: DUMMY
         run: |
           echo "TODO Find target url"
           echo "TODO Run acceptance tests"
+      - name: Run tests
+        run: |
+          echo "url: ${{ needs.deploy-test.outputs.webfrontendUrl }}"
+          echo "env: ${{ env.webfrontendUrl }}"
+
+          curl ${{ env.webfrontendUrl }}
+
   deploy-production:
     uses: ./.github/workflows/deploy.yml
     needs: acceptance-test

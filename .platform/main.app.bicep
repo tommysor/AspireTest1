@@ -80,3 +80,5 @@ module webfrontend 'containerapp.bicep' = {
     appIngressExternal: true
   }
 }
+
+output webfrontendLatestRevisionFqdn string = webfrontend.outputs.latestRevisionFqdn
