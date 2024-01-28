@@ -39,6 +39,7 @@ jobs:
         run: |
           echo "running basic tests"
 
+          dotnet workload restore
           dotnet test
 
       - name: Run acceptance tests
