@@ -9,7 +9,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@4
+    - uses: actions/checkout@v4
     - name: run basic tests
       run: |
         dotnet workload restore
@@ -17,7 +17,7 @@ jobs:
   bicep-lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@4
+    - uses: actions/checkout@v4
     - name: bicep lint
       run: |
         az bicep lint --file .platform/main.acr.bicep
