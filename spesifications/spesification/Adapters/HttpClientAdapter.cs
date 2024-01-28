@@ -13,7 +13,7 @@ public sealed class HttpClientAdapter : IAdapter
         _client = new HttpClient(handler)
         {
             // "https://webfrontend.kindmushroom-c0497470.norwayeast.azurecontainerapps.io/"
-            BaseAddress = new Uri(baseAddress),
+            BaseAddress = new Uri($"https://{baseAddress}"),
         };
     }
 
