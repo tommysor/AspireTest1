@@ -39,8 +39,7 @@ jobs:
         run: |
           echo "running basic tests"
 
-          # TODO remove intentinal mistake
-          dotnet tset
+          dotnet test
 
       - name: Run acceptance tests
         run: |
