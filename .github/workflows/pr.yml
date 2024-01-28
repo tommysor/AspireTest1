@@ -10,15 +10,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: run basic tests
-      run: |
-        dotnet workload restore
-        dotnet test --verbosity normal
+    - run: dotnet workload restore
+    - run: dotnet restore
+    - run: dotnet build --no-restore
+    - run: dotnet test --no-build --verbosity normal
+
   bicep-lint:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: bicep lint
-      run: |
-        az bicep lint --file .platform/main.acr.bicep
-        az bicep lint --file .platform/main.app.bicep
+    - run: az bicep lint --file .platform/main.acr.bicep
+    - run: az bicep lint --file .platform/main.app.bicep
