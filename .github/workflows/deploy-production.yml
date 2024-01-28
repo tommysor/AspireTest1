@@ -1,3 +1,5 @@
+name: deploy-pipeline
+
 on:
   push:
     branches:
@@ -18,9 +20,33 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  call:
+  deploy-test:
     uses: ./.github/workflows/deploy.yml
-    name: deploy
+    with:
+      environment: 'Test'
+    secrets: inherit
+
+  acceptance-test:
+    runs-on: ubuntu-latest
+    needs: deploy-test
+    env:
+      SPESIFICATIONS_BASEADDRESS: ${{ needs.deploy-test.outputs.webfrontendUrl }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run tests
+        run: |
+          echo "webfrontendUrl: ${{ env.SPESIFICATIONS_BASEADDRESS }}"
+
+          pushd spesifications/spesification
+
+          dotnet test
+
+          popd
+
+  deploy-production:
+    uses: ./.github/workflows/deploy.yml
+    needs: acceptance-test
     with:
       environment: 'Production'
     secrets: inherit
