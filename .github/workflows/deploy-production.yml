@@ -21,40 +21,42 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  basic-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: dotnet workload restore
+    - run: dotnet tool restore
+    - run: dotnet test
+    - run: dotnet stryker
+
   deploy-test:
     uses: ./.github/workflows/deploy.yml
     with:
       environment: 'Test'
     secrets: inherit
 
-  acceptance-test:
+  acceptance-tests:
     runs-on: ubuntu-latest
-    needs: deploy-test
+    needs:
+    - deploy-test
+    - basic-tests
     env:
       SPESIFICATIONS_BASEADDRESS: ${{ needs.deploy-test.outputs.webfrontendUrl }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Run basic tests
-        run: |
-          echo "running basic tests"
-
-          dotnet workload restore
-          dotnet test
 
       - name: Run acceptance tests
         run: |
           echo "SPESIFICATIONS_BASEADDRESS: ${{ env.SPESIFICATIONS_BASEADDRESS }}"
 
           pushd spesifications/spesification
-
           dotnet test
-
           popd
 
   deploy-production:
     uses: ./.github/workflows/deploy.yml
-    needs: acceptance-test
+    needs: acceptance-tests
     with:
       environment: 'Production'
     secrets: inherit

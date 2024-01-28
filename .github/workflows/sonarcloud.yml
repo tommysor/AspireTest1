@@ -1,42 +1,11 @@
-name: aspire-test1-ci
+name: sonarcloud
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-concurrency:
-  group: "${{ github.workflow }}-${{ github.ref }}"
-  cancel-in-progress: true
+    branches:
+    - main
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Restore workloads
-      run: dotnet workload restore
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
-
-  mutation-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Workloads
-        run: dotnet workload restore
-      - name: Tools
-        run: dotnet tool restore
-      - name: Mutate
-        run: dotnet stryker
-
   sonarcloud:
     runs-on: windows-2022
     steps:
