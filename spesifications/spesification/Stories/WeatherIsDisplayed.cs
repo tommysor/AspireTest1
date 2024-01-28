@@ -24,10 +24,4 @@ public class WeatherIsDisplayed : IClassFixture<VisitorSetup>
         // Then
         await _visitor.HasTheWeather();
     }
-
-    [Fact]
-    public void TEST_TEST_TEST_FailTheTest()
-    {
-        Assert.Fail("TEST_TEST_TEST");
-    }
 }
