@@ -1,9 +1,6 @@
 name: deploy-pipeline
 
 on:
-  # ON PULL REQUEST ONLY FOR TESTING
-  pull_request: 
-    branches: [ main ]
   push:
     branches:
       - main
