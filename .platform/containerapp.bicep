@@ -91,7 +91,7 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
               }
               timeoutSeconds: 5
               periodSeconds: 5
-              initialDelaySeconds: 20
+              initialDelaySeconds: 5
               successThreshold: 1
               failureThreshold: 10
             }
@@ -104,7 +104,7 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
               }
               timeoutSeconds: 2
               periodSeconds: 10
-              initialDelaySeconds: 10
+              initialDelaySeconds: 5
               successThreshold: 1
               failureThreshold: 3
             }
