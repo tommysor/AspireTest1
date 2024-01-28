@@ -10,6 +10,7 @@ on:
       - 'LICENSE'
       - '.gitignore'
       - '.vscode/*'
+      - '.devcontainer/*'
 
 permissions:
   id-token: write
