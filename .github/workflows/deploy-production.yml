@@ -39,7 +39,12 @@ jobs:
         run: |
           echo "webfrontendUrl: ${{ env.webfrontendUrl }}"
 
-          # TODO
+          pushd spesifications/spesification
+
+          export SPESIFICATIONS_BASEADDRESS=${{ env.webfrontendUrl }}
+          dotnet test
+
+          popd
 
   deploy-production:
     uses: ./.github/workflows/deploy.yml
