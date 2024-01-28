@@ -5,6 +5,11 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - '*.md'
+      - 'LICENSE'
+      - '.vscode/*'
+      - '.devcontainer/*'
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}"
