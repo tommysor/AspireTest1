@@ -50,6 +50,8 @@ jobs:
 
         az group create --location norwayeast --name ${{ env.RG_ACR }}
 
+        az bicep lint --file .platform/main.acr.bicep
+
         deployResult=$(az deployment group create \
           --mode Complete \
           --resource-group "${{ env.RG_ACR }}" \
@@ -116,6 +118,8 @@ jobs:
         echo "Deploying applications"
 
         az group create --location norwayeast --name ${{ env.RG_APP }}
+
+        az bicep lint --file .platform/main.app.bicep
 
         deployResult=$(az deployment group create \
           --mode Complete \
