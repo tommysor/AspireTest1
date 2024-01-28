@@ -1,6 +1,7 @@
 name: deploy-pipeline
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -29,6 +30,11 @@ jobs:
     - run: dotnet tool restore
     - run: dotnet test
     - run: dotnet stryker
+    - uses: actions/upload-artifact@v4
+      with:
+        name: stryker-mutation-report
+        path: StrykerOutput/**/mutation-report.html
+        if-no-files-found: error
 
   deploy-test:
     uses: ./.github/workflows/deploy.yml
