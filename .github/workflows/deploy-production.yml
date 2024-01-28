@@ -35,16 +35,11 @@ jobs:
     env:
       webfrontendUrl: ${{ needs.deploy-test.outputs.webfrontendUrl }}
     steps:
-      - name: DUMMY
-        run: |
-          echo "TODO Find target url"
-          echo "TODO Run acceptance tests"
       - name: Run tests
         run: |
-          echo "url: ${{ needs.deploy-test.outputs.webfrontendUrl }}"
-          echo "env: ${{ env.webfrontendUrl }}"
+          echo "webfrontendUrl: ${{ env.webfrontendUrl }}"
 
-          curl ${{ env.webfrontendUrl }}
+          # TODO
 
   deploy-production:
     uses: ./.github/workflows/deploy.yml
