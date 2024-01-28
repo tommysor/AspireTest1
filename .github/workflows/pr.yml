@@ -13,7 +13,7 @@ jobs:
     - name: run basic tests
       run: |
         dotnet workload restore
-        dotnet test --no-build --verbosity normal
+        dotnet test --verbosity normal
   bicep-lint:
     runs-on: ubuntu-latest
     steps:
