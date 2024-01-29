@@ -16,6 +16,7 @@ param containerCpu string = '0.25'
 param containerMemory string = '0.5Gi'
 
 param aspnetcoreEnvironment string
+param applicationInsightsConnectionString string = ''
 
 resource app 'Microsoft.App/containerApps@2023-05-01' = {
   name: appName
@@ -56,6 +57,10 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
             {
               name: 'AZURE_CLIENT_ID'
               value: managedIdentityClientId
+            }
+            {
+              name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+              value: applicationInsightsConnectionString
             }
             {
               name: 'OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EVENT_LOG_ATTRIBUTES'

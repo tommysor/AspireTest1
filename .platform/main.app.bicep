@@ -74,6 +74,7 @@ module apiservice 'containerapp.bicep' = {
     managedIdentityClientId: managedIdentityClientId
     managedIdentityId: managedIdentityId
     appIngressAllowInsecure: true
+    applicationInsightsConnectionString: applicationInsights.properties.ConnectionString
   }
 }
 
@@ -89,6 +90,7 @@ module webfrontend 'containerapp.bicep' = {
     managedIdentityClientId: managedIdentityClientId
     managedIdentityId: managedIdentityId
     appIngressExternal: true
+    applicationInsightsConnectionString: applicationInsights.properties.ConnectionString
   }
 }
 
