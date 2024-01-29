@@ -122,7 +122,7 @@ jobs:
         az bicep lint --file .platform/main.app.bicep
 
         deployResult=$(az deployment group create \
-          --mode Complete \
+          --mode Incremental \
           --resource-group "${{ env.RG_APP }}" \
           --name "${{ env.deploymentName }}" \
           --template-file ./.platform/main.app.bicep \
