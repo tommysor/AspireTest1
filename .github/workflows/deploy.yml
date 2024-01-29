@@ -121,6 +121,22 @@ jobs:
 
         az bicep lint --file .platform/main.app.bicep
 
+        az deployment group create \
+          --mode Complete \
+          --resource-group "${{ env.RG_APP }}" \
+          --name "${{ env.deploymentName }}" \
+          --template-file ./.platform/main.app.bicep \
+          --parameters aspnetcoreEnvironment=${{ env.ASPNETCORE_ENVIRONMENT }} \
+          --parameters containerRegistryUrl=${{ steps.deployAcr.outputs.containerRegistryUrl }} \
+          --parameters managedIdentityClientId=${{ steps.deployAcr.outputs.managedIdentityClientId }} \
+          --parameters managedIdentityId=${{ steps.deployAcr.outputs.managedIdentityId }} \
+          --parameters apiserviceContainerImage=${{ env.APISERVICE_CONTAINER_IMAGE }} \
+          --parameters webfrontendContainerImage=${{ env.WEBFRONTEND_CONTAINER_IMAGE }} \
+          --parameters deployTimestamp=${{ env.DEPLOY_TIMESTAMP }} \
+          --what-if
+        
+        echo "##### split what-if from actual deploy #####"
+
         deployResult=$(az deployment group create \
           --mode Complete \
           --resource-group "${{ env.RG_APP }}" \
