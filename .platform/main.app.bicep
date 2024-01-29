@@ -37,6 +37,17 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
   }
 }
 
+resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: 'ai${resourceToken}'
+  location: location
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    Flow_Type: 'Bluefield'
+    WorkspaceResourceId: logAnalytics.id
+  }
+}
+
 resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2023-05-01' = {
   name: 'acae${resourceToken}'
   location: location
