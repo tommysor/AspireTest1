@@ -89,7 +89,8 @@ jobs:
         containerRegistryUrl=$(echo $deployResult | jq --raw-output '.properties.outputs.containerRegistryUrl.value')
         echo "containerRegistryUrl=$containerRegistryUrl" >> $GITHUB_OUTPUT
         # managedIdentityId
-        managedIdentityId=$(echo $deployResult | jq --raw-output '.properties.outputs.managedIdentityId.value')
+        #managedIdentityId=$(echo $deployResult | jq --raw-output '.properties.outputs.managedIdentityId.value')
+        managedIdentityId='bbb'
         echo "managedIdentityId=$managedIdentityId" >> $GITHUB_OUTPUT
         # managedIdentityClientId
         managedIdentityClientId=$(echo $deployResult | jq --raw-output '.properties.outputs.managedIdentityClientId.value')
@@ -103,7 +104,7 @@ jobs:
     with:
       environment: 'Test'
       containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
-      managedIdentityId: aaa-${{ needs.deploy-acr.outputs.managedIdentityId }}
+      managedIdentityId: ${{ needs.deploy-acr.outputs.managedIdentityId }}
       managedIdentityClientId: ${{ needs.deploy-acr.outputs.managedIdentityClientId }}
     secrets: inherit
 
