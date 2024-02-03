@@ -58,7 +58,7 @@ jobs:
 
           pushd spesifications
           dotnet build
-          pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
+          pwsh WebpageProtocolDriver/bin/Debug/net8.0/playwright.ps1 install --with-deps
           dotnet test
           popd
 
