@@ -112,6 +112,7 @@ jobs:
   
   publish-apiservice:
     runs-on: ubuntu-latest
+    environment: Shared
     needs: deploy-acr
     env:
       containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
@@ -144,6 +145,7 @@ jobs:
 
   publish-webfrontend:
     runs-on: ubuntu-latest
+    environment: Shared
     needs: deploy-acr
     env:
       containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
