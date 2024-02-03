@@ -122,7 +122,6 @@ jobs:
   
   publish-apiservice:
     runs-on: ubuntu-latest
-    environment: Shared
     needs: deploy-acr
     env:
       containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
@@ -155,7 +154,6 @@ jobs:
 
   snyk-docker-apiservice:
     runs-on: ubuntu-latest
-    environment: Shared
     needs:
     - publish-apiservice
     - deploy-acr
@@ -183,7 +181,6 @@ jobs:
 
   publish-webfrontend:
     runs-on: ubuntu-latest
-    environment: Shared
     needs: deploy-acr
     env:
       containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
@@ -216,7 +213,6 @@ jobs:
 
   snyk-docker-webfrontend:
     runs-on: ubuntu-latest
-    environment: Shared
     needs:
     - publish-webfrontend
     - deploy-acr
