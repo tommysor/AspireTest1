@@ -160,6 +160,18 @@ jobs:
 
         popd
 
+  snyk-apiservice:
+    runs-on: ubuntu-latest
+    needs:
+    - publish-apiservice
+    - deploy-acr
+    steps:
+    - uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: ${{ needs.deploy-acr.outputs.apiserviceContainerImage }}
+
   publish-webfrontend:
     runs-on: ubuntu-latest
     environment: Shared
