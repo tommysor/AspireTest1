@@ -203,7 +203,7 @@ jobs:
         run: |
           cd spesifications
           dotnet build
-          pwsh spesifications/Spesification/bin/Debug/net8.0/playwright.ps1 install --with-deps
+          pwsh Spesification/bin/Debug/net8.0/playwright.ps1 install --with-deps
 
       - name: Run acceptance tests
         run: |
