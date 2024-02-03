@@ -64,7 +64,7 @@ jobs:
     - name: deploy acr
       id: deployAcr
       env:
-        deploymentName: ${{ env.RG_ACR }}-${{ env.DEPLOY_TIMESTAMP }}-${{ env.GITHUB_SHA_SHORT }}
+        deploymentName: ${{ env.RG_ACR }}-$(date +%Y-%m-%dT%H.%M.%S)-$(git rev-parse --short ${{ github.sha }})
       run: |
         echo "Deploying Container registry"
         echo "deploymentName: ${{ env.deploymentName }}"
