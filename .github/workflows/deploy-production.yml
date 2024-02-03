@@ -21,6 +21,11 @@ concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}"
   cancel-in-progress: false
 
+env:
+  APISERVICE_CONTAINERREPOSITORY: ${{ vars.APISERVICE_CONTAINERREPOSITORY }}
+  WEBFRONTEND_CONTAINERREPOSITORY: ${{ vars.WEBFRONTEND_CONTAINERREPOSITORY }}
+  CONTAINER_VERSION_TAG: ${{ github.run_id }}-${{ github.run_attempt }}
+
 jobs:
   basic-tests:
     runs-on: ubuntu-latest
@@ -35,18 +40,151 @@ jobs:
         name: stryker-mutation-report
         path: StrykerOutput/**/mutation-report.html
         if-no-files-found: error
+  
+  deploy-acr:
+    runs-on: ubuntu-latest
+    env:
+      RG_ACR: ${{ vars.RG_ACR }}
+    outputs:
+      containerRegistryUrl: ${{ steps.deployAcr.outputs.containerRegistryUrl }}
+      managedIdentityName: ${{ steps.deployAcr.outputs.managedIdentityName }}
+      apiserviceContainerImage: ${{ steps.deployAcr.outputs.apiserviceContainerImage }}
+      webfrontendContainerImage: ${{ steps.deployAcr.outputs.webfrontendContainerImage }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: 'Az login'
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    
+    - name: deploy acr
+      id: deployAcr
+      env:
+        deploymentName: ${{ env.RG_ACR }}-${{ env.DEPLOY_TIMESTAMP }}-${{ env.GITHUB_SHA_SHORT }}
+      run: |
+        echo "Deploying Container registry"
+        echo "deploymentName: ${{ env.deploymentName }}"
+
+        az group create --location norwayeast --name ${{ env.RG_ACR }}
+
+        az bicep lint --file .platform/main.acr.bicep
+
+        deployResult=$(az deployment group create \
+          --mode Complete \
+          --resource-group "${{ env.RG_ACR }}" \
+          --name "${{ env.deploymentName }}" \
+          --template-file ./.platform/main.acr.bicep \
+          )
+
+        echo "# Deploy result"
+        echo $deployResult
+        echo "# ---"
+        
+        echo "# setting outputs"
+        
+        # containerRegistryUrl
+        containerRegistryUrl=$(echo $deployResult | jq --raw-output '.properties.outputs.containerRegistryUrl.value')
+        echo "containerRegistryUrl=$containerRegistryUrl" >> $GITHUB_OUTPUT
+        # managedIdentityName
+        managedIdentityName=$(echo $deployResult | jq --raw-output '.properties.outputs.managedIdentityName.value')
+        echo "managedIdentityName: $managedIdentityName"
+        echo "managedIdentityName=$managedIdentityName" >> $GITHUB_OUTPUT
+
+        # Predict container image names now that we have the container registry url
+        #APISERVICE_CONTAINER_IMAGE: ${{ inputs.containerRegistryUrl }}/${{ env.APISERVICE_CONTAINERREPOSITORY }}:${{ env.CONTAINER_VERSION_TAG }}
+        apiserviceContainerImage=$containerRegistryUrl/${{ env.APISERVICE_CONTAINERREPOSITORY }}:${{ env.CONTAINER_VERSION_TAG }}
+        echo "apiserviceContainerImage=$apiserviceContainerImage" >> $GITHUB_OUTPUT
+        #WEBFRONTEND_CONTAINER_IMAGE: ${{ inputs.containerRegistryUrl }}/${{ env.WEBFRONTEND_CONTAINERREPOSITORY }}:${{ env.CONTAINER_VERSION_TAG }}
+        webfrontendContainerImage=$containerRegistryUrl/${{ env.WEBFRONTEND_CONTAINERREPOSITORY }}:${{ env.CONTAINER_VERSION_TAG }}
+        echo "webfrontendContainerImage=$webfrontendContainerImage" >> $GITHUB_OUTPUT
+        
+        echo "# done"
+  
+  publish-apiservice:
+    runs-on: ubuntu-latest
+    needs: deploy-acr
+    env:
+      containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: 'Az login'
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: login containerRegistry
+      run: az acr login --name ${{ env.containerRegistryUrl }}
+
+    - name: publish apiservice
+      run: |
+        echo "Publishing apiservice"
+
+        pushd src/Test1.ApiService
+
+        dotnet publish \
+          -p ContainerRegistry='${{ env.containerRegistryUrl }}' \
+          -p PublishProfile=DefaultContainer \
+          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }}"' \
+          -p ContainerRepository=${{ env.APISERVICE_CONTAINERREPOSITORY }}
+
+        popd
+
+  publish-webfrontend:
+    runs-on: ubuntu-latest
+    needs: deploy-acr
+    env:
+      containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: 'Az login'
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: login containerRegistry
+      run: az acr login --name ${{ env.containerRegistryUrl }}
+
+    - name: publish webfrontend
+      run: |
+        echo "Publishing webfrontend"
+
+        pushd src/Test1.Web
+
+        dotnet publish \
+          -p ContainerRegistry='${{ env.containerRegistryUrl }}' \
+          -p PublishProfile=DefaultContainer \
+          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }}"' \
+          -p ContainerRepository=${{ env.WEBFRONTEND_CONTAINERREPOSITORY }}
+
+        popd
 
   deploy-test:
     uses: ./.github/workflows/deploy.yml
+    needs:
+    - deploy-acr
+    - publish-apiservice
+    - publish-webfrontend
     with:
       environment: 'Test'
+      containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
+      managedIdentityName: ${{ needs.deploy-acr.outputs.managedIdentityName }}
+      apiserviceContainerImage: ${{ needs.deploy-acr.outputs.apiserviceContainerImage }}
+      webfrontendContainerImage: ${{ needs.deploy-acr.outputs.webfrontendContainerImage }}
     secrets: inherit
 
   acceptance-tests:
     runs-on: ubuntu-latest
     needs:
     - deploy-test
-    - basic-tests
     env:
       SPESIFICATIONS_BASEADDRESS: ${{ needs.deploy-test.outputs.webfrontendUrl }}
     steps:
@@ -64,7 +202,13 @@ jobs:
 
   deploy-production:
     uses: ./.github/workflows/deploy.yml
-    needs: acceptance-tests
+    needs:
+    - acceptance-tests
+    - basic-tests
     with:
       environment: 'Production'
+      containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
+      managedIdentityName: ${{ needs.deploy-acr.outputs.managedIdentityName }}
+      apiserviceContainerImage: ${{ needs.deploy-acr.outputs.apiserviceContainerImage }}
+      webfrontendContainerImage: ${{ needs.deploy-acr.outputs.webfrontendContainerImage }}
     secrets: inherit

@@ -6,6 +6,18 @@ on:
       environment:
         required: true
         type: string
+      containerRegistryUrl:
+        required: true
+        type: string
+      managedIdentityName:
+        required: true
+        type: string
+      apiserviceContainerImage:
+        required: true
+        type: string
+      webfrontendContainerImage:
+        required: true
+        type: string
     outputs:
       webfrontendUrl:
         value: ${{ jobs.deploy.outputs.webfrontendUrl }}
@@ -23,11 +35,8 @@ jobs:
       webfrontendUrl: ${{ steps.deploy-app-environment.outputs.webfrontendLatestRevisionFqdn }}
 
     env:
-      RG_ACR: ${{ vars.RG_ACR }}
       RG_APP: ${{ vars.RG_APP }}
-      APISERVICE_CONTAINERREPOSITORY: ${{ vars.APISERVICE_CONTAINERREPOSITORY }}
-      WEBFRONTEND_CONTAINERREPOSITORY: ${{ vars.WEBFRONTEND_CONTAINERREPOSITORY }}
-      CONTAINER_VERSION_TAG: ${{ github.run_id }}-${{ github.run_attempt }}
+      RG_ACR: ${{ vars.RG_ACR }}
       ASPNETCORE_ENVIRONMENT: ${{ inputs.environment }}
 
     steps:
@@ -40,80 +49,10 @@ jobs:
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - name: deploy acr
-      id: deployAcr
-      env:
-        deploymentName: ${{ env.RG_ACR }}-${{ env.DEPLOY_TIMESTAMP }}-${{ env.GITHUB_SHA_SHORT }}
-      run: |
-        echo "Deploying Container registry"
-        echo "deploymentName: ${{ env.deploymentName }}"
-
-        az group create --location norwayeast --name ${{ env.RG_ACR }}
-
-        az bicep lint --file .platform/main.acr.bicep
-
-        deployResult=$(az deployment group create \
-          --mode Complete \
-          --resource-group "${{ env.RG_ACR }}" \
-          --name "${{ env.deploymentName }}" \
-          --template-file ./.platform/main.acr.bicep \
-          )
-
-        echo "# Deploy result"
-        echo $deployResult
-        echo "# ---"
-        
-        echo "# setting outputs"
-        
-        # containerRegistryUrl
-        containerRegistryUrl=$(echo $deployResult | jq --raw-output '.properties.outputs.containerRegistryUrl.value')
-        echo "containerRegistryUrl=$containerRegistryUrl" >> $GITHUB_OUTPUT
-        # managedIdentityId
-        managedIdentityId=$(echo $deployResult | jq --raw-output '.properties.outputs.managedIdentityId.value')
-        echo "managedIdentityId=$managedIdentityId" >> $GITHUB_OUTPUT
-        # managedIdentityClientId
-        managedIdentityClientId=$(echo $deployResult | jq --raw-output '.properties.outputs.managedIdentityClientId.value')
-        echo "managedIdentityClientId=$managedIdentityClientId" >> $GITHUB_OUTPUT
-        
-        echo "# done"
-
-    - name: login containerRegistry
-      run: az acr login --name ${{ steps.deployAcr.outputs.containerRegistryUrl }}
-
-    - name: publish apiservice
-      run: |
-        echo "Publishing apiservice"
-
-        pushd src/Test1.ApiService
-
-        dotnet publish \
-          -p ContainerRegistry='${{ steps.deployAcr.outputs.containerRegistryUrl }}' \
-          -p PublishProfile=DefaultContainer \
-          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }}"' \
-          -p ContainerRepository=${{ env.APISERVICE_CONTAINERREPOSITORY }}
-
-        popd
-
-    - name: publish webfrontend
-      run: |
-        echo "Publishing webfrontend"
-
-        pushd src/Test1.Web
-
-        dotnet publish \
-          -p ContainerRegistry='${{ steps.deployAcr.outputs.containerRegistryUrl }}' \
-          -p PublishProfile=DefaultContainer \
-          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }}"' \
-          -p ContainerRepository=${{ env.WEBFRONTEND_CONTAINERREPOSITORY }}
-
-        popd
-
     - name: deploy app environment
       id: deploy-app-environment
       env:
         deploymentName: ${{ env.RG_APP }}-${{ env.DEPLOY_TIMESTAMP }}-${{ env.GITHUB_SHA_SHORT }}
-        APISERVICE_CONTAINER_IMAGE: ${{ steps.deployAcr.outputs.containerRegistryUrl }}/${{ env.APISERVICE_CONTAINERREPOSITORY }}:${{ env.CONTAINER_VERSION_TAG }}
-        WEBFRONTEND_CONTAINER_IMAGE: ${{ steps.deployAcr.outputs.containerRegistryUrl }}/${{ env.WEBFRONTEND_CONTAINERREPOSITORY }}:${{ env.CONTAINER_VERSION_TAG }}
       run: |
         echo "Deploying applications"
 
@@ -127,11 +66,11 @@ jobs:
           --name "${{ env.deploymentName }}" \
           --template-file ./.platform/main.app.bicep \
           --parameters aspnetcoreEnvironment=${{ env.ASPNETCORE_ENVIRONMENT }} \
-          --parameters containerRegistryUrl=${{ steps.deployAcr.outputs.containerRegistryUrl }} \
-          --parameters managedIdentityClientId=${{ steps.deployAcr.outputs.managedIdentityClientId }} \
-          --parameters managedIdentityId=${{ steps.deployAcr.outputs.managedIdentityId }} \
-          --parameters apiserviceContainerImage=${{ env.APISERVICE_CONTAINER_IMAGE }} \
-          --parameters webfrontendContainerImage=${{ env.WEBFRONTEND_CONTAINER_IMAGE }} \
+          --parameters containerRegistryUrl=${{ inputs.containerRegistryUrl }} \
+          --parameters managedIdentityName=${{ inputs.managedIdentityName }} \
+          --parameters managedIdentityScope=${{ env.RG_ACR }} \
+          --parameters apiserviceContainerImage=${{ inputs.apiserviceContainerImage }} \
+          --parameters webfrontendContainerImage=${{ inputs.webfrontendContainerImage }} \
           --parameters deployTimestamp=${{ env.DEPLOY_TIMESTAMP }} \
           )
         
