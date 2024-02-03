@@ -46,7 +46,6 @@ jobs:
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
 
-
     - name: login containerRegistry
       run: az acr login --name ${{ inputs.containerRegistryUrl }}
 
