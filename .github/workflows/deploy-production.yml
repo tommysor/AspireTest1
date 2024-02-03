@@ -49,6 +49,7 @@ jobs:
   
   deploy-acr:
     runs-on: ubuntu-latest
+    environment: Shared
     env:
       RG_ACR: ${{ vars.RG_ACR }}
     outputs:
