@@ -197,16 +197,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set working directory
-        run: cd spesifications
-
       - name: Setup Playwright
         run: |
           dotnet build
-          pwsh Spesification/bin/Debug/net8.0/playwright.ps1 install --with-deps
+          pwsh spesifications/Spesification/bin/Debug/net8.0/playwright.ps1 install --with-deps
 
       - name: Run acceptance tests
-        run: dotnet test
+        run: |
+          cd spesifications
+          dotnet test
 
   deploy-production:
     uses: ./.github/workflows/deploy.yml
