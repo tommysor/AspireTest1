@@ -191,7 +191,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
     - deploy-test
-    - basic-tests
     env:
       SPESIFICATIONS_BASEADDRESS: ${{ needs.deploy-test.outputs.webfrontendUrl }}
     steps:
@@ -209,7 +208,9 @@ jobs:
 
   deploy-production:
     uses: ./.github/workflows/deploy.yml
-    needs: acceptance-tests
+    needs:
+    - acceptance-tests
+    - basic-tests
     with:
       environment: 'Production'
       containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
