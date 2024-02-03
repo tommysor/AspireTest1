@@ -2,6 +2,12 @@ name: deploy-pipeline
 
 on:
   workflow_dispatch:
+
+  # ONLY FOR TEST
+  pull_request: 
+    branches:
+      - main
+
   push:
     branches:
       - main
@@ -137,6 +143,25 @@ jobs:
 
         popd
 
+  snyk-apiservice:
+    runs-on: ubuntu-latest
+    needs: publish-apiservice
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: bicep-build-output
+      uses: Azure/bicep-build-action@v1.0.1
+      with:
+        bicepFilePath: ./platform/main.app.bicep
+        outputFilePath: ./platform/main.app.json
+
+    - name: Run Snyk to check configuration files for security issues
+      uses: snyk/actions/iac
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        file: ./platform/main.app.json
+
   publish-webfrontend:
     runs-on: ubuntu-latest
     environment: Shared
@@ -210,6 +235,7 @@ jobs:
     - deploy-acr
     - acceptance-tests
     - basic-tests
+    - snyk-apiservice
     with:
       environment: 'Production'
       containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
