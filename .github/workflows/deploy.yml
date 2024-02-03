@@ -12,6 +12,12 @@ on:
       managedIdentityName:
         required: true
         type: string
+      apiserviceContainerImage:
+        required: true
+        type: string
+      webfrontendContainerImage:
+        required: true
+        type: string
     outputs:
       webfrontendUrl:
         value: ${{ jobs.deploy.outputs.webfrontendUrl }}
@@ -31,9 +37,6 @@ jobs:
     env:
       RG_APP: ${{ vars.RG_APP }}
       RG_ACR: ${{ vars.RG_ACR }}
-      APISERVICE_CONTAINERREPOSITORY: ${{ vars.APISERVICE_CONTAINERREPOSITORY }}
-      WEBFRONTEND_CONTAINERREPOSITORY: ${{ vars.WEBFRONTEND_CONTAINERREPOSITORY }}
-      CONTAINER_VERSION_TAG: ${{ github.run_id }}-${{ github.run_attempt }}
       ASPNETCORE_ENVIRONMENT: ${{ inputs.environment }}
 
     steps:
@@ -46,44 +49,10 @@ jobs:
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-
-    - name: login containerRegistry
-      run: az acr login --name ${{ inputs.containerRegistryUrl }}
-
-    - name: publish apiservice
-      run: |
-        echo "Publishing apiservice"
-
-        pushd src/Test1.ApiService
-
-        dotnet publish \
-          -p ContainerRegistry='${{ inputs.containerRegistryUrl }}' \
-          -p PublishProfile=DefaultContainer \
-          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }}"' \
-          -p ContainerRepository=${{ env.APISERVICE_CONTAINERREPOSITORY }}
-
-        popd
-
-    - name: publish webfrontend
-      run: |
-        echo "Publishing webfrontend"
-
-        pushd src/Test1.Web
-
-        dotnet publish \
-          -p ContainerRegistry='${{ inputs.containerRegistryUrl }}' \
-          -p PublishProfile=DefaultContainer \
-          -p ContainerImageTags='"${{ env.CONTAINER_VERSION_TAG }}"' \
-          -p ContainerRepository=${{ env.WEBFRONTEND_CONTAINERREPOSITORY }}
-
-        popd
-
     - name: deploy app environment
       id: deploy-app-environment
       env:
         deploymentName: ${{ env.RG_APP }}-${{ env.DEPLOY_TIMESTAMP }}-${{ env.GITHUB_SHA_SHORT }}
-        APISERVICE_CONTAINER_IMAGE: ${{ inputs.containerRegistryUrl }}/${{ env.APISERVICE_CONTAINERREPOSITORY }}:${{ env.CONTAINER_VERSION_TAG }}
-        WEBFRONTEND_CONTAINER_IMAGE: ${{ inputs.containerRegistryUrl }}/${{ env.WEBFRONTEND_CONTAINERREPOSITORY }}:${{ env.CONTAINER_VERSION_TAG }}
       run: |
         echo "Deploying applications"
 
@@ -100,8 +69,8 @@ jobs:
           --parameters containerRegistryUrl=${{ inputs.containerRegistryUrl }} \
           --parameters managedIdentityName=${{ inputs.managedIdentityName }} \
           --parameters managedIdentityScope=${{ env.RG_ACR }} \
-          --parameters apiserviceContainerImage=${{ env.APISERVICE_CONTAINER_IMAGE }} \
-          --parameters webfrontendContainerImage=${{ env.WEBFRONTEND_CONTAINER_IMAGE }} \
+          --parameters apiserviceContainerImage=${{ inputs.apiserviceContainerImage }} \
+          --parameters webfrontendContainerImage=${{ inputs.webfrontendContainerImage }} \
           --parameters deployTimestamp=${{ env.DEPLOY_TIMESTAMP }} \
           )
         
