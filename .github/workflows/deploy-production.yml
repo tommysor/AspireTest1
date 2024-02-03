@@ -160,7 +160,7 @@ jobs:
 
         popd
 
-  snyk-apiservice:
+  snyk-docker-apiservice:
     runs-on: ubuntu-latest
     environment: Shared
     needs:
@@ -221,7 +221,7 @@ jobs:
 
         popd
 
-  snyk-webfrontend:
+  snyk-docker-webfrontend:
     runs-on: ubuntu-latest
     environment: Shared
     needs:
@@ -290,8 +290,8 @@ jobs:
     - acceptance-tests
     - basic-tests
     - snyk-bicep
-    - snyk-apiservice
-    - snyk-webfrontend
+    - snyk-docker-apiservice
+    - snyk-docker-webfrontend
     with:
       environment: 'Production'
       containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
