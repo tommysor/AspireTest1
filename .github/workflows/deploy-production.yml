@@ -246,6 +246,7 @@ jobs:
     - acceptance-tests
     - basic-tests
     - snyk-bicep
+    - snyk-apiservice
     with:
       environment: 'Production'
       containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
