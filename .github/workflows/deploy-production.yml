@@ -40,6 +40,22 @@ jobs:
         name: stryker-mutation-report
         path: StrykerOutput/**/mutation-report.html
         if-no-files-found: error
+
+  snyk-bicep:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: Azure/bicep-build-action@v1.0.1
+      with:
+        bicepFilePath: ./.platform/main.app.bicep
+        outputFilePath: ./.platform/main.app.json
+
+    - uses: snyk/actions/iac@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        file: ./.platform/main.app.json
   
   deploy-acr:
     runs-on: ubuntu-latest
@@ -137,6 +153,34 @@ jobs:
 
         popd
 
+  snyk-docker-apiservice:
+    runs-on: ubuntu-latest
+    environment: Shared
+    needs:
+    - publish-apiservice
+    - deploy-acr
+    env:
+      containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
+    steps:
+    - uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: login containerRegistry
+      run: az acr login --name ${{ env.containerRegistryUrl }}
+    
+    - name: Pull image
+      run: docker pull ${{ needs.deploy-acr.outputs.apiserviceContainerImage }}
+
+    - uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: ${{ needs.deploy-acr.outputs.apiserviceContainerImage }}
+        args: --severity-threshold=high
+
   publish-webfrontend:
     runs-on: ubuntu-latest
     environment: Shared
@@ -169,6 +213,34 @@ jobs:
           -p ContainerRepository=${{ env.WEBFRONTEND_CONTAINERREPOSITORY }}
 
         popd
+
+  snyk-docker-webfrontend:
+    runs-on: ubuntu-latest
+    environment: Shared
+    needs:
+    - publish-webfrontend
+    - deploy-acr
+    env:
+      containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
+    steps:
+    - uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: login containerRegistry
+      run: az acr login --name ${{ env.containerRegistryUrl }}
+    
+    - name: Pull image
+      run: docker pull ${{ needs.deploy-acr.outputs.webfrontendContainerImage }}
+
+    - uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: ${{ needs.deploy-acr.outputs.webfrontendContainerImage }}
+        args: --severity-threshold=high
 
   deploy-test:
     uses: ./.github/workflows/deploy.yml
@@ -210,6 +282,9 @@ jobs:
     - deploy-acr
     - acceptance-tests
     - basic-tests
+    - snyk-bicep
+    - snyk-docker-apiservice
+    - snyk-docker-webfrontend
     with:
       environment: 'Production'
       containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}

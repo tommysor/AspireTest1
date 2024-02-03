@@ -1,3 +1,4 @@
 {
-    "git.autofetch": true
+    "git.autofetch": true,
+    "dotnet.defaultSolution": "Test1.sln"
 }
