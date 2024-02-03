@@ -30,6 +30,7 @@ jobs:
 
     env:
       RG_APP: ${{ vars.RG_APP }}
+      RG_ACR: ${{ vars.RG_ACR }}
       APISERVICE_CONTAINERREPOSITORY: ${{ vars.APISERVICE_CONTAINERREPOSITORY }}
       WEBFRONTEND_CONTAINERREPOSITORY: ${{ vars.WEBFRONTEND_CONTAINERREPOSITORY }}
       CONTAINER_VERSION_TAG: ${{ github.run_id }}-${{ github.run_attempt }}
@@ -98,6 +99,7 @@ jobs:
           --parameters aspnetcoreEnvironment=${{ env.ASPNETCORE_ENVIRONMENT }} \
           --parameters containerRegistryUrl=${{ inputs.containerRegistryUrl }} \
           --parameters managedIdentityName=${{ inputs.managedIdentityName }} \
+          --parameters managedIdentityScope=${{ env.RG_ACR }} \
           --parameters apiserviceContainerImage=${{ env.APISERVICE_CONTAINER_IMAGE }} \
           --parameters webfrontendContainerImage=${{ env.WEBFRONTEND_CONTAINER_IMAGE }} \
           --parameters deployTimestamp=${{ env.DEPLOY_TIMESTAMP }} \
