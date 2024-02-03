@@ -89,8 +89,8 @@ jobs:
         containerRegistryUrl=$(echo $deployResult | jq --raw-output '.properties.outputs.containerRegistryUrl.value')
         echo "containerRegistryUrl=$containerRegistryUrl" >> $GITHUB_OUTPUT
         # managedIdentityId
-        #managedIdentityId=$(echo $deployResult | jq --raw-output '.properties.outputs.managedIdentityId.value')
-        managedIdentityId='bbb'
+        managedIdentityId=$(echo $deployResult | jq --raw-output '.properties.outputs.managedIdentityId.value')
+        echo "AA: $managedIdentityId :BB"
         echo "managedIdentityId=$managedIdentityId" >> $GITHUB_OUTPUT
         # managedIdentityClientId
         managedIdentityClientId=$(echo $deployResult | jq --raw-output '.properties.outputs.managedIdentityClientId.value')
