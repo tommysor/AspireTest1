@@ -2,6 +2,12 @@ name: deploy-pipeline
 
 on:
   workflow_dispatch:
+
+  # ONLY FOR TESTING
+  pull_request:
+    branches:
+      - main
+
   push:
     branches:
       - main
@@ -190,15 +196,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run acceptance tests
-        run: |
-          echo "SPESIFICATIONS_BASEADDRESS: ${{ env.SPESIFICATIONS_BASEADDRESS }}"
+      - name: Set working directory
+        run: cd spesifications
 
-          pushd spesifications
+      - name: Setup Playwright
+        run: |
           dotnet build
           pwsh Spesification/bin/Debug/net8.0/playwright.ps1 install --with-deps
-          dotnet test
-          popd
+
+      - name: Run acceptance tests
+        run: dotnet test
 
   deploy-production:
     uses: ./.github/workflows/deploy.yml
