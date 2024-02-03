@@ -103,7 +103,7 @@ jobs:
     with:
       environment: 'Test'
       containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
-      managedIdentityId: ${{ needs.deploy-acr.outputs.managedIdentityId }}
+      managedIdentityId: aaa-${{ needs.deploy-acr.outputs.managedIdentityId }}
       managedIdentityClientId: ${{ needs.deploy-acr.outputs.managedIdentityClientId }}
     secrets: inherit
 
