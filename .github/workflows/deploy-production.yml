@@ -44,6 +44,8 @@ jobs:
   
   deploy-acr:
     runs-on: ubuntu-latest
+    env:
+      RG_ACR: ${{ vars.RG_ACR }}
     outputs:
       containerRegistryUrl: ${{ steps.deployAcr.outputs.containerRegistryUrl }}
       managedIdentityId: ${{ steps.deployAcr.outputs.managedIdentityId }}

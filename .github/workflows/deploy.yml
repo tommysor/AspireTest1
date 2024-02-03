@@ -32,7 +32,6 @@ jobs:
       webfrontendUrl: ${{ steps.deploy-app-environment.outputs.webfrontendLatestRevisionFqdn }}
 
     env:
-      RG_ACR: ${{ vars.RG_ACR }}
       RG_APP: ${{ vars.RG_APP }}
       APISERVICE_CONTAINERREPOSITORY: ${{ vars.APISERVICE_CONTAINERREPOSITORY }}
       WEBFRONTEND_CONTAINERREPOSITORY: ${{ vars.WEBFRONTEND_CONTAINERREPOSITORY }}
