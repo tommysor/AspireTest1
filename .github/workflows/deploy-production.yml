@@ -221,6 +221,34 @@ jobs:
 
         popd
 
+  snyk-webfrontend:
+    runs-on: ubuntu-latest
+    environment: Shared
+    needs:
+    - publish-webfrontend
+    - deploy-acr
+    env:
+      containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
+    steps:
+    - uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: login containerRegistry
+      run: az acr login --name ${{ env.containerRegistryUrl }}
+    
+    - name: Pull image
+      run: docker pull ${{ needs.deploy-acr.outputs.webfrontendContainerImage }}
+
+    - uses: snyk/actions/docker@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: ${{ needs.deploy-acr.outputs.webfrontendContainerImage }}
+        args: --severity-threshold=high
+
   deploy-test:
     uses: ./.github/workflows/deploy.yml
     needs:
@@ -263,6 +291,7 @@ jobs:
     - basic-tests
     - snyk-bicep
     - snyk-apiservice
+    - snyk-webfrontend
     with:
       environment: 'Production'
       containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
