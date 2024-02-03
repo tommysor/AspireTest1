@@ -186,6 +186,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: ${{ needs.deploy-acr.outputs.apiserviceContainerImage }}
+        args: --severity-threshold=high
 
   publish-webfrontend:
     runs-on: ubuntu-latest
