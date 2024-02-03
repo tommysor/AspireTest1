@@ -165,7 +165,18 @@ jobs:
     needs:
     - publish-apiservice
     - deploy-acr
+    env:
+      containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
     steps:
+    - uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: login containerRegistry
+      run: az acr login --name ${{ env.containerRegistryUrl }}
+
     - uses: snyk/actions/docker@master
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
