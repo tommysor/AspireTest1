@@ -48,8 +48,7 @@ jobs:
       RG_ACR: ${{ vars.RG_ACR }}
     outputs:
       containerRegistryUrl: ${{ steps.deployAcr.outputs.containerRegistryUrl }}
-      managedIdentityId: ${{ steps.deployAcr.outputs.managedIdentityId }}
-      managedIdentityClientId: ${{ steps.deployAcr.outputs.managedIdentityClientId }}
+      managedIdentityName: ${{ steps.deployAcr.outputs.managedIdentityName }}
 
     steps:
     - uses: actions/checkout@v4
@@ -88,13 +87,10 @@ jobs:
         # containerRegistryUrl
         containerRegistryUrl=$(echo $deployResult | jq --raw-output '.properties.outputs.containerRegistryUrl.value')
         echo "containerRegistryUrl=$containerRegistryUrl" >> $GITHUB_OUTPUT
-        # managedIdentityId
-        managedIdentityId=$(echo $deployResult | jq --raw-output '.properties.outputs.managedIdentityId.value')
-        echo "AA: $managedIdentityId :BB"
-        echo "managedIdentityId=$managedIdentityId" >> $GITHUB_OUTPUT
-        # managedIdentityClientId
-        managedIdentityClientId=$(echo $deployResult | jq --raw-output '.properties.outputs.managedIdentityClientId.value')
-        echo "managedIdentityClientId=$managedIdentityClientId" >> $GITHUB_OUTPUT
+        # managedIdentityName
+        managedIdentityName=$(echo $deployResult | jq --raw-output '.properties.outputs.managedIdentityName.value')
+        echo "managedIdentityName: $managedIdentityName"
+        echo "managedIdentityName=$managedIdentityName" >> $GITHUB_OUTPUT
         
         echo "# done"
 
@@ -104,8 +100,7 @@ jobs:
     with:
       environment: 'Test'
       containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
-      managedIdentityId: ${{ needs.deploy-acr.outputs.managedIdentityId }}
-      managedIdentityClientId: ${{ needs.deploy-acr.outputs.managedIdentityClientId }}
+      managedIdentityName: ${{ needs.deploy-acr.outputs.managedIdentityName }}
     secrets: inherit
 
   acceptance-tests:
@@ -134,6 +129,5 @@ jobs:
     with:
       environment: 'Production'
       containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
-      managedIdentityId: ${{ needs.deploy-acr.outputs.managedIdentityId }}
-      managedIdentityClientId: ${{ needs.deploy-acr.outputs.managedIdentityClientId }}
+      managedIdentityName: ${{ needs.deploy-acr.outputs.managedIdentityName }}
     secrets: inherit

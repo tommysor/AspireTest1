@@ -12,8 +12,8 @@ param location string = resourceGroup().location
 param aspnetcoreEnvironment string
 
 param containerRegistryUrl string
-param managedIdentityClientId string
-param managedIdentityId string
+param managedIdentityName string
+param managedIdentityScope string
 
 param apiserviceContainerImage string
 param webfrontendContainerImage string
@@ -21,6 +21,11 @@ param webfrontendContainerImage string
 param deployTimestamp string = utcNow()
 
 var resourceToken = toLower(uniqueString(subscription().id, resourceGroupName, location))
+
+resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
+  name: managedIdentityName
+  scope: resourceGroup(managedIdentityScope)
+}
 
 // log analytics
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
@@ -71,8 +76,8 @@ module apiservice 'containerapp.bicep' = {
     containerAppsEnvironmentId: containerAppsEnvironment.id
     containerImage: apiserviceContainerImage
     containerRegistryUrl: containerRegistryUrl
-    managedIdentityClientId: managedIdentityClientId
-    managedIdentityId: managedIdentityId
+    managedIdentityClientId: managedIdentity.properties.clientId
+    managedIdentityId: managedIdentity.id
     appIngressAllowInsecure: true
     applicationInsightsConnectionString: applicationInsights.properties.ConnectionString
   }
@@ -87,8 +92,8 @@ module webfrontend 'containerapp.bicep' = {
     containerAppsEnvironmentId: containerAppsEnvironment.id
     containerImage: webfrontendContainerImage
     containerRegistryUrl: containerRegistryUrl
-    managedIdentityClientId: managedIdentityClientId
-    managedIdentityId: managedIdentityId
+    managedIdentityClientId: managedIdentity.properties.clientId
+    managedIdentityId: managedIdentity.id
     appIngressExternal: true
     applicationInsightsConnectionString: applicationInsights.properties.ConnectionString
   }
