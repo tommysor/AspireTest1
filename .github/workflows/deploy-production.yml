@@ -2,12 +2,6 @@ name: deploy-pipeline
 
 on:
   workflow_dispatch:
-
-  # ONLY FOR TEST
-  pull_request: 
-    branches:
-      - main
-
   push:
     branches:
       - main
