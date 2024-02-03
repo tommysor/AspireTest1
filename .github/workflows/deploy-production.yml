@@ -57,6 +57,8 @@ jobs:
           echo "SPESIFICATIONS_BASEADDRESS: ${{ env.SPESIFICATIONS_BASEADDRESS }}"
 
           pushd spesifications
+          dotnet build
+          pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps
           dotnet test
           popd
 
