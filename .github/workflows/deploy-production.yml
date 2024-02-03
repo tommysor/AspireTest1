@@ -152,14 +152,14 @@ jobs:
     
     - uses: Azure/bicep-build-action@v1.0.1
       with:
-        bicepFilePath: ./platform/main.app.bicep
-        outputFilePath: ./platform/main.app.json
+        bicepFilePath: ./.platform/main.app.bicep
+        outputFilePath: ./.platform/main.app.json
 
     - uses: snyk/actions/iac@master
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        file: ./platform/main.app.json
+        file: ./.platform/main.app.json
 
   publish-webfrontend:
     runs-on: ubuntu-latest
