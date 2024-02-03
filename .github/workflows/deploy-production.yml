@@ -162,6 +162,7 @@ jobs:
 
   snyk-apiservice:
     runs-on: ubuntu-latest
+    environment: Shared
     needs:
     - publish-apiservice
     - deploy-acr
