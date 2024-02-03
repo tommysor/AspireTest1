@@ -176,7 +176,10 @@ jobs:
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
     - name: login containerRegistry
-      run: docker login ${{ env.containerRegistryUrl }}
+      run: az acr login --name ${{ env.containerRegistryUrl }}
+    
+    - name: Pull image
+      run: docker pull ${{ needs.deploy-acr.outputs.apiserviceContainerImage }}
 
     - uses: snyk/actions/docker@master
       env:
