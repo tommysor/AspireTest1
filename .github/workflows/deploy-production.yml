@@ -150,11 +150,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    # - name: bicep-build-output
-    #   uses: Azure/bicep-build-action@v1.0.1
-    #   with:
-    #     bicepFilePath: ./platform/main.app.bicep
-    #     outputFilePath: ./platform/main.app.json
+    - uses: Azure/bicep-build-action@v1.0.1
+      with:
+        bicepFilePath: ./platform/main.app.bicep
+        outputFilePath: ./platform/main.app.json
 
     # - name: Run Snyk to check configuration files for security issues
     #   uses: snyk/actions/iac
