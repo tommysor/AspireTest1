@@ -1,0 +1,12 @@
+@inherits TestContext
+@using Test1.Web.Components.Pages
+
+@code {
+    [Fact]
+    public void ShouldShowTitle()
+    {
+        var cut = Render(@<SearchTest />);
+        var title = cut.Find("h1");
+        title.MarkupMatches("<h1>Try out search</h1>");
+    }
+}
