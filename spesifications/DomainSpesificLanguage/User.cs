@@ -18,4 +18,14 @@ public class User
     {
         await _protocolDriver.AssertHaveWeatherForecast();
     }
+
+    public Task GoToSearchTest()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task AssertSearchTestHaveTestData()
+    {
+        throw new NotImplementedException();
+    }
 }
