@@ -3,10 +3,18 @@
 
 @code {
     [Fact]
-    public void ShouldShowTitle()
+    public void ShouldShowHeader()
     {
         var cut = Render(@<SearchTest />);
         var title = cut.Find("h1");
         title.MarkupMatches("<h1>Try out search</h1>");
+    }
+
+    [Fact]
+    public void ShouldShowDescription()
+    {
+        var cut = Render(@<SearchTest />);
+        var description = cut.Find("p");
+        description.MarkupMatches("<p>Try out search on randomly generated data</p>");
     }
 }
