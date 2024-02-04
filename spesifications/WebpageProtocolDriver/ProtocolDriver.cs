@@ -18,7 +18,12 @@ public class ProtocolDriver : IProtocolDriver
         _browser = await _playwright.Chromium.LaunchAsync(new() { Headless = true });
         _page = await _browser.NewPageAsync();
         _baseAddress = Environment.GetEnvironmentVariable("SPESIFICATIONS_BASEADDRESS") ?? throw new InvalidOperationException("SPESIFICATIONS_BASEADDRESS not found");
-        await _page.GotoAsync($"https://{_baseAddress}");
+        var isContainsSchema = _baseAddress.Contains("http://") || _baseAddress.Contains("https://");
+        if (!isContainsSchema)
+        {
+            _baseAddress = $"https://{_baseAddress}";
+        }
+        await _page.GotoAsync(_baseAddress);
         _weatherForecastDriver = new WeatherForecastDriver(_page);
     }
 
