@@ -19,13 +19,13 @@ public class User
         await _protocolDriver.AssertHaveWeatherForecast();
     }
 
-    public Task GoToSearchTest()
+    public async Task GoToSearchTest()
     {
-        throw new NotImplementedException();
+        await _protocolDriver.GoToSearchTest();
     }
 
-    public Task AssertSearchTestHaveTestData()
+    public async Task AssertSearchTestHaveTestData()
     {
-        throw new NotImplementedException();
+        await _protocolDriver.AssertSearchTestHaveTestData();
     }
 }
