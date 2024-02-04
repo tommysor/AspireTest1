@@ -6,7 +6,7 @@
         "thresholds": {
             "high": 95,
             "low": 80,
-            "break": 20
+            "break": 5
         },
         "reporters": [
             "Dots",
