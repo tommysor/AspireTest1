@@ -18,4 +18,14 @@ public class User
     {
         await _protocolDriver.AssertHaveWeatherForecast();
     }
+
+    public async Task GoToSearchTest()
+    {
+        await _protocolDriver.GoToSearchTest();
+    }
+
+    public async Task AssertSearchTestHaveTestData()
+    {
+        await _protocolDriver.AssertSearchTestHaveTestData();
+    }
 }

@@ -21,7 +21,8 @@
 				"ms-dotnettools.csdevkit",
 				"GitHub.vscode-github-actions",
 				"ms-azuretools.vscode-bicep",
-				"GitHub.copilot"
+				"GitHub.copilot",
+				"bierner.markdown-mermaid"
 			]
 		}
 	}
