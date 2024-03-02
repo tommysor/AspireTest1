@@ -6,7 +6,10 @@
 	"image": "mcr.microsoft.com/devcontainers/dotnet:1-8.0-bookworm",
 
 	"features": {
-		"ghcr.io/devcontainers/features/docker-in-docker:2": {}
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
+		"ghcr.io/devcontainers/features/dotnet": {
+			"version": "9.0"
+		}
 	},
 
 	// Use 'postCreateCommand' to run commands after the container is created.

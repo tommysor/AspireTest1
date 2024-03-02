@@ -31,6 +31,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0'
+        dotnet-quality: 'preview'
     - run: dotnet workload restore
     - run: dotnet tool restore
     - run: dotnet test
@@ -128,6 +132,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0'
+        dotnet-quality: 'preview'
+
     - name: 'Az login'
       uses: azure/login@v1
       with:
@@ -186,6 +195,11 @@ jobs:
       containerRegistryUrl: ${{ needs.deploy-acr.outputs.containerRegistryUrl }}
     steps:
     - uses: actions/checkout@v4
+
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0'
+        dotnet-quality: 'preview'
 
     - name: 'Az login'
       uses: azure/login@v1
