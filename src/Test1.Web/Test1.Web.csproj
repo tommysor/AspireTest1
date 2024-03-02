@@ -8,7 +8,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ContainerFamily>jammy-chiseled</ContainerFamily>
+    <!-- <ContainerFamily>preview.2-jammy-chiseled</ContainerFamily> -->
+    <ContainerBaseImage>mcr.microsoft.com/dotnet/nightly/aspnet:9.0.0-preview.2-jammy-chiseled</ContainerBaseImage>
   </PropertyGroup>
 
   <ItemGroup>
